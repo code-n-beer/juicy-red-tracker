@@ -12,6 +12,7 @@ CREATE TABLE category (
 
 CREATE TABLE task (
   id SERIAL PRIMARY KEY,
+  user_id INT NOT NULL references "user" ON DELETE CASCADE,
   category_id INT references category ON DELETE CASCADE,
   task_id INT references task ON DELETE CASCADE,
   name TEXT NOT NULL
@@ -32,4 +33,10 @@ CREATE TABLE pomodoro (
   minutes INT DEFAULT 25,
   created_at TIMESTAMP,
   success BOOLEAN DEFAULT false
+);
+
+CREATE TABLE session (
+  id SERIAL PRIMARY KEY,
+  user_id INT NOT NULL references "user" ON DELETE CASCADE,
+  token TEXT NOT NULL
 );
