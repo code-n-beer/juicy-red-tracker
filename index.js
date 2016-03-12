@@ -176,12 +176,20 @@ app.post('/api/session', (req, res) => {
     });
 });
 
-function treeify(task, tasks) {
-
+function treeify(task, tasks, parents) {
+  var parent = tasks.filter((t) => task.task_id === t.id)[0];
+  if (!parent.task) {
+    parent.task = [];
+  }
+  parent.task.push(task);
+  if (parent.task_id) {
+    treeify(parent, tasks, parents);
+  } else {
+    parents.push(parent);
+  }
 }
 
 app.get('/api/user', (req, res) => {
-
   isAuthed(req)
     .then((user) => {
       if (user) {
@@ -191,22 +199,23 @@ app.get('/api/user', (req, res) => {
             knex('task')
               .where({user_id: user.id})
               .then((tasks) => {
+                const leafNodes = tasks.filter((t) => {
+                  if (!t.task_id) return false;
+                  return tasks.filter((possibleChild) => possibleChild.task_id === t.id).length === 0
+                });
+                var parents = [];
+                leafNodes.forEach((ln) => {
+                  treeify(ln, tasks, parents);
+                });
+                parents.forEach((p) => {
+                  categories.filter((c) => p.category_id === c.id)[0].task = p;
+                });
                 knex('pomodoro')
                   .where({user_id: user.id})
                   .then((pomodoros) => {
                     delete user.password
                     user.pomodoros = pomodoros;
-                    user.categories = categories.map((c) => {
-
-
-                      tasks.
-                      // c.tasks = tasks.filter((t) => t.category_id === c.id);
-
-
-
-
-                      return c;
-                    });
+                    user.categories = categories;
                     res.json(user);
                   });
               });
