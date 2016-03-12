@@ -23,8 +23,8 @@ Returns: Access token that you have to set to all subsequent requests as a heade
 Log out: DELETE /api/session
 
 Return: Message stating you have logged out. It will only delete the current session token making it obsolete in the future.
----
 
+---
 Add a category for user: POST /api/user/:userId/category
 
 Returns: List of ids.
