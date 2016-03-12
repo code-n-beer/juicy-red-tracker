@@ -67,7 +67,7 @@ app.post('/api/user/:userId/category/:categoryId/task', (req, res) => {
                   res.json(rows);
                 });
             } else {
-              res.json({error: 'This category belongs to someone else'});
+              res.status(403).json({error: 'This category belongs to someone else'});
             }
           });
       }
@@ -107,6 +107,27 @@ app.post('/api/user/:userId/category', (req, res) => {
     });
 });
 
+app.post('/api/user/:userId/task/:taskId/pomodoro', (req, res) => {
+  isAuthed(req)
+    .then((user) => {
+      if (user) {
+        belongsToUser(user, 'task', req.params.taskId)
+          .then((doesBelong) => {
+            if (doesBelong) {
+              const pomodoro = {
+
+              };
+
+            } else {
+              res.status(403).json({error: 'This task doesn\'t belong to you'});
+            }
+          });
+      }
+    });
+});
+
+
+
 app.post('/api/user', (req, res) => {
   knex('user')
     .returning('id')
@@ -143,4 +164,173 @@ app.post('/api/session', (req, res) => {
 
 app.listen(process.env.PORT || 3000 , () => {
   console.log('Example app listening on port 3000!');
+});
+
+app.get('/api/user/dummy', (req, res) => {
+  res.json({
+    id: 1337,
+    email: 'teppo@testaaja.fi',
+    category: [
+      {
+        id: 1,
+        name: 'Work',
+        task: [
+          {
+            id: 1,
+            name: 'Epic Tomato Project',
+            category_id: 1,
+            task_id: false,
+            task: [
+              {
+                id: 3,
+                name: 'Fetch the hobbits',
+                category_id: 1,
+                task_id: 1,
+                task: []
+              }
+            ]
+          },
+          {
+            id: 2,
+            name: 'Legacy Projekt',
+            category_id: 1,
+            task_id: false,
+            task: [
+              {
+                id: 4,
+                name: 'Write Pascal',
+                category_id: 1,
+                task_id: 2,
+                task: []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        id: 2,
+        name: 'Study',
+        task: [
+          {
+            id: 5,
+            name: 'Park Chemistry',
+            category_id: 2,
+            task_id: false,
+            task: [
+              {
+                id: 7,
+                name: 'Read Valdemar',
+                category_id: 2,
+                task_id: 5,
+                task: []
+              }
+            ]
+          },
+          {
+            id: 6,
+            name: 'Pronouns 101',
+            category_id: 2,
+            task_id: false,
+            task: [
+              {
+                id: 8,
+                name: 'Study the first 500',
+                category_id: 1,
+                task_id: 6,
+                task: []
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    pomodoro: [
+      {
+        id: 1,
+        task_id: 3,
+        minutes: 25,
+        created_at: '2016-03-12T19:45:12.821Z',
+        success: true
+      },
+      {
+        id: 2,
+        task_id: 3,
+        minutes: 25,
+        created_at: '2016-03-12T19:45:12.821Z',
+        success: true
+      },
+      {
+        id: 3,
+        task_id: 3,
+        minutes: 25,
+        created_at: '2016-03-12T19:45:12.821Z',
+        success: true
+      },
+      {
+        id: 4,
+        task_id: 3,
+        minutes: 25,
+        created_at: '2016-03-12T19:45:12.821Z',
+        success: true
+      },
+      {
+        id: 5,
+        task_id: 4,
+        minutes: 25,
+        created_at: '2016-03-12T19:45:12.821Z',
+        success: true
+      },
+      {
+        id: 6,
+        task_id: 7,
+        minutes: 25,
+        created_at: '2016-03-12T19:45:12.821Z',
+        success: true
+      },
+      {
+        id: 7,
+        task_id: 7,
+        minutes: 25,
+        created_at: '2016-03-12T19:45:12.821Z',
+        success: true
+      },
+      {
+        id: 8,
+        task_id: 8,
+        minutes: 25,
+        created_at: '2016-03-12T19:45:12.821Z',
+        success: true
+      }
+    ],
+    goal: [
+      {
+        id: 1,
+        task_id: 1,
+        amount: 125,
+        start_at: '2016-03-07T00:00:00.000Z',
+        end_at: '2016-03-13T21:59:00.000Z'
+      },
+      {
+        id: 2,
+        task_id: 2,
+        amount: 75,
+        start_at: '2016-03-07T00:00:00.000Z',
+        end_at: '2016-03-13T21:59:00.000Z'
+      },
+      {
+        id: 3,
+        task_id: 5,
+        amount: 100,
+        start_at: '2016-03-07T00:00:00.000Z',
+        end_at: '2016-03-13T21:59:00.000Z'
+      },
+      {
+        id: 4,
+        task_id: 6,
+        amount: 150,
+        start_at: '2016-03-07T00:00:00.000Z',
+        end_at: '2016-03-13T21:59:00.000Z'
+      }
+    ]
+  });
 });

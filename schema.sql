@@ -22,6 +22,7 @@ CREATE TABLE goal (
   id SERIAL PRIMARY KEY,
   user_id INT NOT NULL references "user" ON DELETE CASCADE,
   task_id INT NOT NULL references task ON DELETE CASCADE,
+  amount INT NOT NULL,
   start_at TIMESTAMP NOT NULL,
   end_at TIMESTAMP NOT NULL
 );
