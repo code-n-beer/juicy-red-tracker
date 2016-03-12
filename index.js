@@ -10,6 +10,13 @@ var knex = require('knex')({
 
 app.use(bodyParser.json());
 
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
+
+
 pg.defaults.ssl = true;
 
 function belongsToUser(user, tableName, id) {
@@ -169,6 +176,10 @@ app.post('/api/session', (req, res) => {
     });
 });
 
+function treeify(task, tasks) {
+
+}
+
 app.get('/api/user', (req, res) => {
 
   isAuthed(req)
@@ -186,7 +197,14 @@ app.get('/api/user', (req, res) => {
                     delete user.password
                     user.pomodoros = pomodoros;
                     user.categories = categories.map((c) => {
-                      c.tasks = tasks.filter((t) => t.category_id === c.id);
+
+
+                      tasks.
+                      // c.tasks = tasks.filter((t) => t.category_id === c.id);
+
+
+
+
                       return c;
                     });
                     res.json(user);
