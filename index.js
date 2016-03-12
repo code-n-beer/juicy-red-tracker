@@ -115,9 +115,18 @@ app.post('/api/user/:userId/task/:taskId/pomodoro', (req, res) => {
           .then((doesBelong) => {
             if (doesBelong) {
               const pomodoro = {
-
+                user_id: user.id,
+                task_id: req.params.taskId,
+                minutes: req.body.minutes,
+                created_at: new Date(),
+                success: req.body.success
               };
-
+              knex('pomodoro')
+                .returning('id')
+                .insert(pomodoro)
+                .then((rows) => {
+                  res.json(rows);
+                });
             } else {
               res.status(403).json({error: 'This task doesn\'t belong to you'});
             }
@@ -125,8 +134,6 @@ app.post('/api/user/:userId/task/:taskId/pomodoro', (req, res) => {
       }
     });
 });
-
-
 
 app.post('/api/user', (req, res) => {
   knex('user')
@@ -160,6 +167,35 @@ app.post('/api/session', (req, res) => {
           });
       });
     });
+});
+
+app.get('/api/user', (req, res) => {
+
+  isAuthed(req)
+    .then((user) => {
+      if (user) {
+        knex('category')
+          .where({user_id: user.id})
+          .then((categories) => {
+            knex('task')
+              .where({user_id: user.id})
+              .then((tasks) => {
+                knex('pomodoro')
+                  .where({user_id: user.id})
+                  .then((pomodoros) => {
+                    delete user.password
+                    user.pomodoros = pomodoros;
+                    user.categories = categories.map((c) => {
+                      c.tasks = tasks.filter((t) => t.category_id === c.id);
+                      return c;
+                    });
+                    res.json(user);
+                  });
+              });
+          });
+      }
+    });
+
 });
 
 app.listen(process.env.PORT || 3000 , () => {
