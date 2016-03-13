@@ -198,6 +198,12 @@ app.post('/api/user/goal', (req, res) => {
 
 function treeify(task, tasks, parents) {
   var parent = tasks.filter((t) => task.task_id === t.id)[0];
+  if (!parent) {
+    if (parents.indexOf(task) === -1) {
+      parents.push(task);
+    }
+    return;
+  }
   if (!parent.task) {
     parent.task = [];
   }
@@ -220,7 +226,6 @@ app.get('/api/user/task', (req, res) => {
           .then((tasks) => {
             if (!req.query.flatten) {
               const leafNodes = tasks.filter((t) => {
-                if (!t.task_id) return false;
                 return tasks.filter((possibleChild) => possibleChild.task_id === t.id).length === 0
               });
               var parents = [];
@@ -276,7 +281,6 @@ app.get('/api/user', (req, res) => {
                   .where({user_id: user.id})
                   .then((tasks) => {
                     const leafNodes = tasks.filter((t) => {
-                      if (!t.task_id) return false;
                       return tasks.filter((possibleChild) => possibleChild.task_id === t.id).length === 0
                     });
                     var parents = [];
@@ -284,7 +288,12 @@ app.get('/api/user', (req, res) => {
                       treeify(ln, tasks, parents);
                     });
                     parents.forEach((p) => {
-                      categories.filter((c) => p.category_id === c.id)[0].task = p;
+                      categories.filter((c) => {
+                        if (!c.tasks) {
+                          c.tasks = [];
+                        }
+                        return p.category_id === c.id;
+                      })[0].tasks.push(p);
                     });
                     knex('pomodoro')
                       .where({user_id: user.id})
