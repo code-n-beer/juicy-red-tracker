@@ -16,7 +16,6 @@ app.use((req, res, next) => {
   next();
 });
 
-
 pg.defaults.ssl = true;
 
 function belongsToUser(user, tableName, id) {
@@ -54,7 +53,7 @@ function isAuthed(req) {
   });
 }
 
-app.post('/api/user/:userId/category/:categoryId/task', (req, res) => {
+app.post('/api/user/category/:categoryId/task', (req, res) => {
   isAuthed(req)
     .then((user) => {
       if (user) {
@@ -95,7 +94,7 @@ app.delete('/api/session', (req, res) => {
     });
 });
 
-app.post('/api/user/:userId/category', (req, res) => {
+app.post('/api/user/category', (req, res) => {
   isAuthed(req)
     .then((user) => {
       if (user) {
@@ -114,7 +113,7 @@ app.post('/api/user/:userId/category', (req, res) => {
     });
 });
 
-app.post('/api/user/:userId/task/:taskId/pomodoro', (req, res) => {
+app.post('/api/user/task/:taskId/pomodoro', (req, res) => {
   isAuthed(req)
     .then((user) => {
       if (user) {
@@ -176,6 +175,27 @@ app.post('/api/session', (req, res) => {
     });
 });
 
+app.post('/api/user/goal', (req, res) => {
+  isAuthed(req)
+    .then((user) => {
+      if (user) {
+        const goal = {
+          user_id: user.id,
+          task_id: req.body.task_id,
+          amount: req.body.amount,
+          start_at: req.body.start_at,
+          end_at: req.body.end_at
+        };
+        knex('goal')
+          .returning('id')
+          .insert(goal)
+          .then((rows) => {
+            res.json(rows);
+          });
+      }
+    });
+});
+
 function treeify(task, tasks, parents) {
   var parent = tasks.filter((t) => task.task_id === t.id)[0];
   if (!parent.task) {
@@ -185,44 +205,101 @@ function treeify(task, tasks, parents) {
   if (parent.task_id) {
     treeify(parent, tasks, parents);
   } else {
-    parents.push(parent);
+    if (parents.indexOf(parent) === -1) {
+      parents.push(parent);
+    }
   }
 }
 
-app.get('/api/user', (req, res) => {
+app.get('/api/user/task', (req, res) => {
+  isAuthed(req)
+    .then((user) => {
+      if (user) {
+        knex('task')
+          .where({user_id: user.id})
+          .then((tasks) => {
+            if (!req.query.flatten) {
+              const leafNodes = tasks.filter((t) => {
+                if (!t.task_id) return false;
+                return tasks.filter((possibleChild) => possibleChild.task_id === t.id).length === 0
+              });
+              var parents = [];
+              leafNodes.forEach((ln) => {
+                treeify(ln, tasks, parents);
+              });
+              res.json(parents);
+            } else {
+              res.json(tasks);
+            }
+          });
+        }
+    });
+});
+
+app.get('/api/user/category', (req, res) => {
   isAuthed(req)
     .then((user) => {
       if (user) {
         knex('category')
           .where({user_id: user.id})
           .then((categories) => {
-            knex('task')
+            res.json(categories)
+          });
+      }
+    });
+});
+
+app.get('/api/user/pomodoro', (req, res) => {
+  isAuthed(req)
+    .then((user) => {
+      if (user) {
+        knex('pomodoro')
+          .where({user_id: user.id})
+          .then((pomodoros) => {
+            res.json(pomodoros);
+          });
+      }
+    });
+});
+
+app.get('/api/user', (req, res) => {
+  isAuthed(req)
+    .then((user) => {
+      if (user) {
+        knex('goal')
+          .where({user_id: user.id})
+          .then((goals) => {
+            knex('category')
               .where({user_id: user.id})
-              .then((tasks) => {
-                const leafNodes = tasks.filter((t) => {
-                  if (!t.task_id) return false;
-                  return tasks.filter((possibleChild) => possibleChild.task_id === t.id).length === 0
-                });
-                var parents = [];
-                leafNodes.forEach((ln) => {
-                  treeify(ln, tasks, parents);
-                });
-                parents.forEach((p) => {
-                  categories.filter((c) => p.category_id === c.id)[0].task = p;
-                });
-                knex('pomodoro')
+              .then((categories) => {
+                knex('task')
                   .where({user_id: user.id})
-                  .then((pomodoros) => {
-                    delete user.password
-                    user.pomodoros = pomodoros;
-                    user.categories = categories;
-                    res.json(user);
+                  .then((tasks) => {
+                    const leafNodes = tasks.filter((t) => {
+                      if (!t.task_id) return false;
+                      return tasks.filter((possibleChild) => possibleChild.task_id === t.id).length === 0
+                    });
+                    var parents = [];
+                    leafNodes.forEach((ln) => {
+                      treeify(ln, tasks, parents);
+                    });
+                    parents.forEach((p) => {
+                      categories.filter((c) => p.category_id === c.id)[0].task = p;
+                    });
+                    knex('pomodoro')
+                      .where({user_id: user.id})
+                      .then((pomodoros) => {
+                        delete user.password
+                        user.pomodoros = pomodoros;
+                        user.categories = categories;
+                        user.goals = goals;
+                        res.json(user);
+                      });
                   });
               });
           });
       }
     });
-
 });
 
 app.listen(process.env.PORT || 3000 , () => {
