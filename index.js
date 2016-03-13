@@ -10,13 +10,17 @@ var knex = require('knex')({
 
 app.use(bodyParser.json());
 
+app.use(express.static('proto'));
+
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 });
 
-pg.defaults.ssl = true;
+app.all('/api/user/*', isAuthed);
+
+pg.defaults.ssl = process.env.PRODUCTION ? true : false;
 
 function belongsToUser(user, tableName, id) {
   return new Promise((resolve, reject) => {
@@ -28,115 +32,93 @@ function belongsToUser(user, tableName, id) {
   });
 }
 
-function isAuthed(req) {
+function isAuthed(req, res, next) {
   const token = req.headers.accesstoken;
-  return new Promise((resolve, reject) => {
-    if (!token) {
-      resolve(false);
-    } else {
-      knex('session')
-        .where({token: token})
-        .then((resp) => {
-          if (resp.length > 0) {
-            knex('user')
-              .where({
-                id: resp[0].user_id
-              })
-              .then((user) => {
-                resolve(user[0]);
-              });
-          } else {
-            resolve(false);
-          }
-        });
-      }
-  });
+  if (!token) {
+    res.status(403).json({error: 'No auth key'});
+  } else {
+    knex('session')
+      .where({token: token})
+      .then((resp) => {
+        if (resp.length > 0) {
+          knex('user')
+            .where({
+              id: resp[0].user_id
+            })
+            .then((user) => {
+              req.user = user[0];
+              next();
+            });
+        } else {
+          res.status(403).json({error: 'Incorrect auth key'});
+        }
+      });
+    }
 }
 
 app.post('/api/user/category/:categoryId/task', (req, res) => {
-  isAuthed(req)
-    .then((user) => {
-      if (user) {
-        const task = {
-          category_id: req.params.categoryId,
-          task_id: req.body.task_id || undefined,
-          name: req.body.name,
-          user_id: user.id
-        };
-        belongsToUser(user, 'category', req.params.categoryId)
-          .then((doesBelong) => {
-            if (doesBelong) {
-              knex('task')
-                .returning('id')
-                .insert(task)
-                .then((rows) => {
-                  res.json(rows);
-                });
-            } else {
-              res.status(403).json({error: 'This category belongs to someone else'});
-            }
+  const task = {
+    category_id: req.params.categoryId,
+    task_id: req.body.task_id || undefined,
+    name: req.body.name,
+    user_id: user.id
+  };
+  belongsToUser(user, 'category', req.params.categoryId)
+    .then((doesBelong) => {
+      if (doesBelong) {
+        knex('task')
+          .returning('id')
+          .insert(task)
+          .then((rows) => {
+            res.json(rows);
           });
+      } else {
+        res.status(403).json({error: 'This category belongs to someone else'});
       }
     });
 });
 
 app.delete('/api/session', (req, res) => {
-  isAuthed(req)
-    .then((user) => {
-      if (user) {
-        knex('session')
-          .where({token: req.headers.accesstoken})
-          .del()
-          .then(() => {
-            res.json({message: 'session deleted'});
-          });
-      }
+  knex('session')
+    .where({token: req.headers.accesstoken})
+    .del()
+    .then(() => {
+      res.json({message: 'session deleted'});
     });
 });
 
 app.post('/api/user/category', (req, res) => {
-  isAuthed(req)
-    .then((user) => {
-      if (user) {
-        knex('category')
-          .returning('id')
-          .insert({
-            user_id: user.id,
-            name: req.body.name
-          })
-          .then((rows) => {
-            res.json(rows);
-          });
-      } else {
-        res.status(403).json({error: 'Not authed brada'});
-      }
+  var user = req.user;
+  knex('category')
+    .returning('id')
+    .insert({
+      user_id: user.id,
+      name: req.body.name
+    })
+    .then((rows) => {
+      res.json(rows);
     });
 });
 
 app.post('/api/user/task/:taskId/pomodoro', (req, res) => {
-  isAuthed(req)
-    .then((user) => {
-      if (user) {
-        belongsToUser(user, 'task', req.params.taskId)
-          .then((doesBelong) => {
-            if (doesBelong) {
-              const pomodoro = {
-                user_id: user.id,
-                task_id: req.params.taskId,
-                minutes: req.body.minutes,
-                created_at: new Date(),
-                success: req.body.success
-              };
-              knex('pomodoro')
-                .returning('id')
-                .insert(pomodoro)
-                .then((rows) => {
-                  res.json(rows);
-                });
-            } else {
-              res.status(403).json({error: 'This task doesn\'t belong to you'});
-            }
+  belongsToUser(user, 'task', req.params.taskId)
+    .then((doesBelong) => {
+      if (doesBelong) {
+        const pomodoro = {
+          user_id: user.id,
+          task_id: req.params.taskId,
+          minutes: req.body.minutes,
+          created_at: new Date(),
+          success: req.body.success
+        };
+        knex('pomodoro')
+          .returning('id')
+          .insert(pomodoro)
+          .then((rows) => {
+            res.json(rows);
           });
+      } else {
+        res.status(403).json({error: 'This task doesn\'t belong to you'});
       }
     });
 });
@@ -176,23 +158,18 @@ app.post('/api/session', (req, res) => {
 });
 
 app.post('/api/user/goal', (req, res) => {
-  isAuthed(req)
-    .then((user) => {
-      if (user) {
-        const goal = {
-          user_id: user.id,
-          task_id: req.body.task_id,
-          amount: req.body.amount,
-          start_at: req.body.start_at,
-          end_at: req.body.end_at
-        };
-        knex('goal')
-          .returning('id')
-          .insert(goal)
-          .then((rows) => {
-            res.json(rows);
-          });
-      }
+  const goal = {
+    user_id: user.id,
+    task_id: req.body.task_id,
+    amount: req.body.amount,
+    start_at: req.body.start_at,
+    end_at: req.body.end_at
+  };
+  knex('goal')
+    .returning('id')
+    .insert(goal)
+    .then((rows) => {
+      res.json(rows);
     });
 });
 
@@ -218,96 +195,80 @@ function treeify(task, tasks, parents) {
 }
 
 app.get('/api/user/task', (req, res) => {
-  isAuthed(req)
-    .then((user) => {
-      if (user) {
-        knex('task')
-          .where({user_id: user.id})
-          .then((tasks) => {
-            if (!req.query.flatten) {
-              const leafNodes = tasks.filter((t) => {
-                return tasks.filter((possibleChild) => possibleChild.task_id === t.id).length === 0
-              });
-              var parents = [];
-              leafNodes.forEach((ln) => {
-                treeify(ln, tasks, parents);
-              });
-              res.json(parents);
-            } else {
-              res.json(tasks);
-            }
-          });
-        }
+  var user = req.user;
+  knex('task')
+    .where({user_id: user.id})
+    .then((tasks) => {
+      if (!req.query.flatten) {
+        const leafNodes = tasks.filter((t) => {
+          return tasks.filter((possibleChild) => possibleChild.task_id === t.id).length === 0
+        });
+        var parents = [];
+        leafNodes.forEach((ln) => {
+          treeify(ln, tasks, parents);
+        });
+        res.json(parents);
+      } else {
+        res.json(tasks);
+      }
     });
 });
 
 app.get('/api/user/category', (req, res) => {
-  isAuthed(req)
-    .then((user) => {
-      if (user) {
-        knex('category')
-          .where({user_id: user.id})
-          .then((categories) => {
-            res.json(categories)
-          });
-      }
+  var user = req.user;
+  knex('category')
+    .where({user_id: user.id})
+    .then((categories) => {
+      res.json(categories)
     });
 });
 
 app.get('/api/user/pomodoro', (req, res) => {
-  isAuthed(req)
-    .then((user) => {
-      if (user) {
-        knex('pomodoro')
-          .where({user_id: user.id})
-          .then((pomodoros) => {
-            res.json(pomodoros);
-          });
-      }
+  var user = req.user;
+  knex('pomodoro')
+    .where({user_id: user.id})
+    .then((pomodoros) => {
+      res.json(pomodoros);
     });
 });
 
 app.get('/api/user', (req, res) => {
-  isAuthed(req)
-    .then((user) => {
-      if (user) {
-        knex('goal')
-          .where({user_id: user.id})
-          .then((goals) => {
-            knex('category')
-              .where({user_id: user.id})
-              .then((categories) => {
-                knex('task')
-                  .where({user_id: user.id})
-                  .then((tasks) => {
-                    const leafNodes = tasks.filter((t) => {
-                      return tasks.filter((possibleChild) => possibleChild.task_id === t.id).length === 0
-                    });
-                    var parents = [];
-                    leafNodes.forEach((ln) => {
-                      treeify(ln, tasks, parents);
-                    });
-                    parents.forEach((p) => {
-                      categories.filter((c) => {
-                        if (!c.tasks) {
-                          c.tasks = [];
-                        }
-                        return p.category_id === c.id;
-                      })[0].tasks.push(p);
-                    });
-                    knex('pomodoro')
-                      .where({user_id: user.id})
-                      .then((pomodoros) => {
-                        delete user.password
-                        user.pomodoros = pomodoros;
-                        user.categories = categories;
-                        user.goals = goals;
-                        res.json(user);
-                      });
-                  });
-              });
-          });
-      }
+  var user = req.user;
+  var goals, categories;
+  knex('goal')
+    .where({user_id: user.id})
+    .then((goalRows) => {
+      goals = goalRows;
+      return knex('category').where({user_id: user.id})
+    })
+    .then((categoryRows) => {
+      categories = categoryRows;
+      return knex('task').where({user_id: user.id})
+    })
+    .then((tasks) => {
+      const leafNodes = tasks.filter((t) => {
+        return tasks.filter((possibleChild) => possibleChild.task_id === t.id).length === 0
+      });
+      var parents = [];
+      leafNodes.forEach((ln) => {
+        treeify(ln, tasks, parents);
+      });
+      parents.forEach((p) => {
+        categories.filter((c) => {
+          if (!c.tasks) {
+            c.tasks = [];
+          }
+          return p.category_id === c.id;
+        })[0].tasks.push(p);
+      });
+      return knex('pomodoro').where({user_id: user.id});
+    })
+    .then((pomodoros) => {
+      delete user.password
+      user.pomodoros = pomodoros;
+      user.categories = categories;
+      user.goals = goals;
+      res.json(user);
     });
 });
 

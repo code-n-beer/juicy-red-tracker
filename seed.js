@@ -5,7 +5,7 @@ var knex = require('knex')({
   connection: process.env.DATABASE_URL
 });
 
-pg.defaults.ssl = true;
+pg.defaults.ssl = process.env.PRODUCTION ? true : false;
 
 function getRandomIntInclusive(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
