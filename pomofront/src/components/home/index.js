@@ -12,8 +12,16 @@ class Testink extends React.Component {
 }
 */
 
-const List = Cycle.component( 'List', ( ) => {
-	return Rx.Observable.just( <div> perse </div> );
+const List = Cycle.component( 'List', ( ints, props ) => {
+	return props.get( 'items' ).map( items =>
+		<ul>
+			{ items.map( ( item, idx ) => {
+				console.log( item.name );
+				console.log( idx );
+				return <li key={ idx }> { item.name } </li>
+			} ) }
+		</ul>
+	);
 } );
 
 const Clicker = Cycle.component( 'Counter', ( interactions ) => {
@@ -39,10 +47,11 @@ const User = Cycle.component( 'User', () => {
 	return DOM.getJSON( 'http://localhost:3000/api/user/dummy' )
 	//.startWith( { message: 'Loading' } )
 	//.map( obj => Object.keys( obj ) )
-	.map( ses => {
-		console.log( ses );
+	.map( user => {
+		console.log( user.category );
 		return <div>
-			<h1> { ses.email } </h1>
+			<h1> { user .email } </h1>
+			<List items={ user.category }/>
 		</div>
 	} );
 } );
@@ -57,7 +66,6 @@ export default class Home extends React.Component {
 				<User />
 				<p> </p>
 				<p></p>
-				<List/>
 			</div>
 		);
 	}
