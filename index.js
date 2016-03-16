@@ -14,7 +14,7 @@ app.use(express.static('proto'));
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, accesstoken");
   next();
 });
 
@@ -33,6 +33,10 @@ function belongsToUser(user, tableName, id) {
 }
 
 function isAuthed(req, res, next) {
+  if (req.method === 'OPTIONS') {
+    res.status(200).send('OK');
+    return;
+  }
   const token = req.headers.accesstoken;
   if (!token) {
     res.status(403).json({error: 'No auth key'});
@@ -101,7 +105,8 @@ app.post('/api/user/category', (req, res) => {
 });
 
 app.post('/api/user/task/:taskId/pomodoro', (req, res) => {
-  belongsToUser(user, 'task', req.params.taskId)
+  console.log(req.body);
+  belongsToUser(req.user, 'task', req.params.taskId)
     .then((doesBelong) => {
       if (doesBelong) {
         const pomodoro = {
@@ -230,6 +235,10 @@ app.get('/api/user/pomodoro', (req, res) => {
     .then((pomodoros) => {
       res.json(pomodoros);
     });
+});
+
+app.get('/api/mock/tasks', (req, res) => {
+  res.json({tasks: ['School', 'Work', 'Sports', 'Games']});
 });
 
 app.get('/api/user', (req, res) => {
