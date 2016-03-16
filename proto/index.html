@@ -1,0 +1,221 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>React Tutorial</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.7/react.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.7/react-dom.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.23/browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/0.3.5/marked.min.js"></script>
+
+    <style>
+      .signupBox {
+        width: 15em;
+        margin: 0 auto;
+        text-align: center;
+      }
+
+      .signupBox input {
+        margin: .5em auto;
+        display: block;
+      }
+
+      .signupBox button {
+        width: 7.5em;
+        height: 3em;
+      }
+
+      .none {
+        display: none;
+      }
+
+      .appBox {
+        width: 35em;
+        margin: 0 auto;
+        text-align: center;
+      }
+
+      .pomodoroBox {
+        text-align: center;
+      }
+
+      .pomodoroBox input {
+        display: block;
+      }
+
+      .pomodoroBox button {
+        margin: 0 auto;
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="content"></div>
+    <script type="text/babel">
+
+    class AppController {
+
+      constructor() {
+        this.user = {};
+      }
+
+      setUser(user) {
+        this.user = user;
+      }
+
+      getUser() {
+        return this.user;
+      }
+
+      isAuthenticated() {
+        return !!this.user.token;
+      }
+
+    }
+
+    var appCtrl = new AppController();
+    const API = 'http://localhost:3000/api';
+
+    function sendToServer(endpoint, data) {
+      return fetch(API+endpoint, {
+        method: 'post',
+        mode: 'cors',
+        body: JSON.stringify(data),
+        headers: new Headers({
+          'Content-Type': 'application/json',
+          'accesstoken' : appCtrl.isAuthenticated() ? appCtrl.getUser().token : undefined
+        })
+      });
+    }
+
+    function getFromServer(endpoint) {
+      return fetch(API+endpoint);
+    }
+
+    function getJson(response) {
+      return response.json();
+    }
+
+    var SignupBox = React.createClass({
+      handleClick: function(event) {
+        const email = document.querySelector('.signupBox input[name="email"]').value;
+        const password = document.querySelector('.signupBox input[name="password"]').value;
+
+        if (!email || !password) {
+          return;
+        }
+
+        const user = {email: email, password: password};
+        sendToServer('/user', user)
+          .then(function(response) {
+            return response.json();
+          })
+          .then(function(data) {
+            return sendToServer('/session', user);
+          })
+          .then(function(response) {
+            return response.json();
+          })
+          .then(function(data) {
+            appCtrl.setUser({email: email, token: data.token});
+            document.querySelector('.signupBox').className += ' none';
+            ReactDOM.render(
+              <AppBox user={user} />,
+              document.getElementById('content')
+            );
+          });
+      },
+      render: function() {
+        return (
+          <div className="signupBox">
+            <h1>Sign up here</h1>
+            <label htmlFor="email">Email</label>
+            <input type="text" name="email" value={this.props.email}/>
+            <label htmlFor="email">Password</label>
+            <input type="password" name="password" value={this.props.password}/>
+            <button onClick={this.handleClick}>Register</button>
+          </div>
+        );
+      }
+    });
+
+    var TitleBox = React.createClass({
+      render: function() {
+        return (
+          <div className="titleBar">
+            <h1>Happy pomodoroing {this.props.user.email}</h1>
+          </div>
+        );
+      }
+    });
+
+    var PomodoroBox = React.createClass({
+      getInitialState: function() {
+        return {
+          tasks: []
+        };
+      },
+      componentDidMount: function() {
+        var component = this;
+        getFromServer('/mock/tasks')
+          .then(function(response) {
+            return response.json();
+          })
+          .then(function(data) {
+            component.setState({
+              tasks: data.tasks
+            });
+          });
+      },
+      handleClick: function(event) {
+        const pomodoro = {
+          minutes: 25,
+          success: true
+        };
+        sendToServer('/user/task/1/pomodoro', pomodoro)
+          .then(getJson)
+          .then(function(data) {
+            console.log(data);
+          });
+      },
+      render: function() {
+        var taskChoices = this.state.tasks.map(function(task) {
+          return (
+            <option value={task} key={task}>{task}</option>
+          );
+        });
+        return (
+          <div className="pomodoroBox">
+            <h2>Add pomodoros here</h2>
+            <select>
+              <option disabled>Category</option>
+              {taskChoices}
+            </select>
+            <button onClick={this.handleClick}>Save your pomodoro ^_^</button>
+          </div>
+        );
+      }
+    });
+
+    var AppBox = React.createClass({
+      render: function() {
+        return (
+          <div className="appBox">
+            <TitleBox user={this.props.user}/>
+            <PomodoroBox />
+          </div>
+        );
+      }
+    });
+
+
+
+    ReactDOM.render(
+      <SignupBox />,
+      document.getElementById('content')
+    );
+    </script>
+  </body>
+</html>
