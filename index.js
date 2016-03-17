@@ -61,6 +61,7 @@ function isAuthed(req, res, next) {
 }
 
 app.post('/api/user/category/:categoryId/task', (req, res) => {
+  var user = req.user;
   const task = {
     category_id: req.params.categoryId,
     task_id: req.body.task_id || undefined,
@@ -105,7 +106,7 @@ app.post('/api/user/category', (req, res) => {
 });
 
 app.post('/api/user/task/:taskId/pomodoro', (req, res) => {
-  console.log(req.body);
+  var user = req.user;
   belongsToUser(req.user, 'task', req.params.taskId)
     .then((doesBelong) => {
       if (doesBelong) {
