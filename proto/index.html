@@ -1,55 +1,12 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html>
   <head>
     <meta charset="utf-8" />
     <title>React Tutorial</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.7/react.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.7/react-dom.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.23/browser.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/0.3.5/marked.min.js"></script>
-
-    <style>
-      .signupBox {
-        width: 15em;
-        margin: 0 auto;
-        text-align: center;
-      }
-
-      .signupBox input {
-        margin: .5em auto;
-        display: block;
-      }
-
-      .signupBox button {
-        width: 7.5em;
-        height: 3em;
-      }
-
-      .none {
-        display: none;
-      }
-
-      .appBox {
-        width: 35em;
-        margin: 0 auto;
-        text-align: center;
-      }
-
-      .pomodoroBox {
-        text-align: center;
-      }
-
-      .pomodoroBox input {
-        display: block;
-      }
-
-      .pomodoroBox button {
-        margin: 0 auto;
-        display: block;
-      }
-    </style>
+    <script src="js/react.js"></script>
+    <script src="js/react-dom.js"></script>
+    <script src="js/browser.min.js"></script>
+    <link rel="stylesheet" href="css/main.css">
   </head>
   <body>
     <div id="content"></div>
@@ -58,10 +15,15 @@
     class AppController {
 
       constructor() {
-        this.user = {};
+        if (localStorage.getItem('user')) {
+          this.user = JSON.parse(localStorage.getItem('user'));
+        } else {
+          this.user = {};
+        }
       }
 
       setUser(user) {
+        localStorage.setItem('user', JSON.stringify(user));
         this.user = user;
       }
 
@@ -72,7 +34,6 @@
       isAuthenticated() {
         return !!this.user.token;
       }
-
     }
 
     var appCtrl = new AppController();
@@ -91,7 +52,12 @@
     }
 
     function getFromServer(endpoint) {
-      return fetch(API+endpoint);
+      return fetch(API+endpoint, {
+        headers: new Headers({
+          'Content-Type': 'application/json',
+          'accesstoken' : appCtrl.isAuthenticated() ? appCtrl.getUser().token : undefined
+        })
+      });
     }
 
     function getJson(response) {
@@ -142,10 +108,18 @@
     });
 
     var TitleBox = React.createClass({
+      logOut: function() {
+        appCtrl.setUser({});
+        ReactDOM.render(
+          <SignupBox />,
+          document.getElementById('content')
+        )
+      },
       render: function() {
         return (
           <div className="titleBar">
             <h1>Happy pomodoroing {this.props.user.email}</h1>
+            <button onClick={this.logOut}>Log out</button>
           </div>
         );
       }
@@ -154,43 +128,63 @@
     var PomodoroBox = React.createClass({
       getInitialState: function() {
         return {
-          tasks: []
+          taskPoms: {}
         };
       },
       componentDidMount: function() {
+
+      },
+      componentWillReceiveProps: function() {
         var component = this;
-        getFromServer('/mock/tasks')
-          .then(function(response) {
-            return response.json();
-          })
-          .then(function(data) {
+        getFromServer('/user/pomodoro')
+          .then(getJson)
+          .then(function(pomodoros) {
+            const taskPoms = component.props.tasks.reduce((prev, cur) => {
+              prev[cur.name] = pomodoros.filter((p) => p.task_id === cur.id).length
+              return prev;
+            }, {});
             component.setState({
-              tasks: data.tasks
+              taskPoms: taskPoms
             });
           });
       },
       handleClick: function(event) {
-        const pomodoro = {
+        var component = this;
+        const taskId = document.querySelector('.pomodoroBox select').value;
+        var pomodoro = {
           minutes: 25,
           success: true
         };
-        sendToServer('/user/task/1/pomodoro', pomodoro)
+        sendToServer('/user/task/'+taskId+'/pomodoro', pomodoro)
           .then(getJson)
           .then(function(data) {
-            console.log(data);
+            component.setState(function(prevState, curProps) {
+              const task = component.props.tasks.filter((t) => {
+                return t.id === parseInt(taskId);
+              })[0];
+              prevState.taskPoms[task.name] += 1;
+              return prevState;
+            });
           });
       },
       render: function() {
-        var taskChoices = this.state.tasks.map(function(task) {
+        var component = this;
+        var taskChoices = this.props.tasks.map(function(task) {
           return (
-            <option value={task} key={task}>{task}</option>
+            <option value={task.id} key={task.id}>{task.name}</option>
+          );
+        });
+        var completed = Object.keys(this.state.taskPoms).map(function(taskName) {
+          return (
+            <p key={taskName}>{taskName}: {component.state.taskPoms[taskName]}</p>
           );
         });
         return (
           <div className="pomodoroBox">
+            <h2>Completed pomodoros</h2>
+              {completed}
             <h2>Add pomodoros here</h2>
             <select>
-              <option disabled>Category</option>
               {taskChoices}
             </select>
             <button onClick={this.handleClick}>Save your pomodoro ^_^</button>
@@ -199,23 +193,248 @@
       }
     });
 
-    var AppBox = React.createClass({
+    var CategoryBox = React.createClass({
+      getInitialState: function() {
+        return {
+          availableCategories: []
+        }
+      },
+      componentDidMount: function() {
+        var component = this;
+        getFromServer('/user/category')
+          .then(getJson)
+          .then(function(data) {
+            component.setState({
+              availableCategories: data || []
+            });
+          });
+      },
+      handleClick: function() {
+        var component = this;
+        const cat = document.querySelector('.categoryBox input[name="newCategory"]').value;
+        document.querySelector('.categoryBox input').value = '';
+        sendToServer('/user/category', {name: cat})
+          .then(getJson)
+          .then(function(data) {
+            component.setState(function(prevState, curProps) {
+              return {
+                availableCategories: prevState.availableCategories.concat({id: data[0], name: cat})
+              };
+            });
+          });
+      },
       render: function() {
+        const availableCategories = this.state.availableCategories.map(function(c) {
+          return (
+            <option key={c.id} value={c.id}>{c.name}</option>
+          );
+        });
         return (
-          <div className="appBox">
-            <TitleBox user={this.props.user}/>
-            <PomodoroBox />
+          <div className="categoryBox">
+            <p>Your categories</p>
+            <select>{availableCategories}</select>
+
+            <p>Post a new one here</p>
+            <input type="text" name="newCategory" />
+            <button onClick={this.handleClick}>Add</button>
           </div>
         );
       }
     });
 
+    var TaskBox = React.createClass({
+      handleClick: function() {
+        var component = this;
+        const catId = document.querySelector('.categoryBox select').value;
+        const name = document.querySelector('.taskBox input').value;
+        document.querySelector('.taskBox input').value = '';
+        const task = {name: name};
+        sendToServer('/user/category/'+catId+'/task', task)
+          .then(getJson)
+          .then(function(data) {
+            component.props.addTask({
+              name: name,
+              id: data[0]
+            });
+          });
+      },
+      render: function() {
+        return (
+          <div className="taskBox">
+            <h2>Add a task here</h2>
+            <input type="text" name="newTask" />
+            <button onClick={this.handleClick}>Send</button>
+          </div>
+        );
+      }
+    });
+
+    var AppBox = React.createClass({
+      addToTasks: function(task) {
+        this.setState(function(prevState, curProps) {
+          var newState = prevState;
+          newState.tasks.push(task);
+          return newState;
+        });
+      },
+      getInitialState: function() {
+        return {
+          tasks: [],
+          categories: []
+        };
+      },
+      componentDidMount: function() {
+        var component = this;
+        var state = {};
+        getFromServer('/user/category')
+          .then(getJson)
+          .then(function(data) {
+            state.categories = data;
+            return getFromServer('/user/task');
+          })
+          .then(getJson)
+          .then(function(data) {
+            state.tasks = data;
+            component.setState(state);
+          });
+      },
+      render: function() {
+        return (
+          <div className="appBox">
+            <TitleBox user={this.props.user}/>
+            <CategoryBox />
+            <TaskBox addTask={this.addToTasks}/>
+            <PomodoroBox tasks={this.state.tasks}/>
+          </div>
+        );
+      }
+    });
+
+    var MainView = React.createClass({
+      getInitialState: function() {
+        return {
+          visibleComponents: [<StatsBox key={'stats'} />]
+        };
+      },
+      compSwitch: function(componentName) {
+        var component;
+        switch (componentName) {
+          case 'main':
+            component = (
+              <StatsBox key={'stats'}/>
+            );
+            break;
+          case 'test':
+            component = (
+              <AppBox user={appCtrl.getUser()} />
+            );
+            break;
+          default:
+            break;
+        }
+        this.setState({
+          visibleComponents: [component]
+        });
+      },
+      render: function() {
+        return (
+          <div className="mainView">
+            <h1>Happy pomodoroing {this.props.user.email}</h1>
+            <nav>
+              <ul>
+                <li onClick={this.compSwitch.bind(this, 'main')}>Main</li>
+                <li>Tasks and Categories</li>
+                <li>Goals</li>
+                <li>Pomodoro</li>
+                <li onClick={this.compSwitch.bind(this, 'test')}>Test</li>
+              </ul>
+            </nav>
+            {this.state.visibleComponents}
+          </div>
+        );
+      }
+    });
+
+    var StatsBox = React.createClass({
+      getInitialState: function() {
+        return {
+          stats: []
+        };
+      },
+      componentDidMount: function() {
+        var component = this;
+        var memo = {};
+        getFromServer('/user/category')
+          .then(getJson)
+          .then(function(data) {
+            memo.categories = data;
+            return getFromServer('/user/task');
+          })
+          .then(getJson)
+          .then(function(data) {
+            memo.tasks = data;
+            return getFromServer('/user/pomodoro');
+          })
+          .then(getJson)
+          .then(function(pomodoros) {
+            const tasks = memo.tasks.map(function(t) {
+              const pomAmount = pomodoros.filter((p) => p.task_id === t.id).length;
+              return {
+                id: t.id,
+                category_id: t.category_id,
+                name: t.name,
+                pomAmount: pomAmount
+              }
+            });
+            const stats = memo.categories.map(function(c) {
+              const catTasks = tasks.filter((t) => t.category_id === c.id);
+              return {
+                category: c.name,
+                tasks: catTasks
+              }
+            });
+            component.setState({
+              stats: stats
+            });
+          });
+      },
+
+      render: function() {
+        var stats = this.state.stats.map(function(stat, i) {
+          return (
+            <div className="catRow" key={i}>
+              <h3>{stat.category}</h3>
+              {stat.tasks.map(function(task, i) {
+                return (
+                  <p key={i}>{task.name}: {task.pomAmount}</p>
+                );
+              })}
+            </div>
+          );
+        });
+        return (
+          <div className="statsBox">
+            <h2>Completed pomodoros</h2>
+            {stats}
+          </div>
+        );
+      }
+    });
+
+    if (appCtrl.isAuthenticated()) {
+      ReactDOM.render(
+        <MainView user={appCtrl.getUser()} />,
+        // <AppBox user={appCtrl.getUser()} />,
+        document.getElementById('content')
+      );
+    } else {
+      ReactDOM.render(
+        <SignupBox />,
+        document.getElementById('content')
+      );
+    }
 
 
-    ReactDOM.render(
-      <SignupBox />,
-      document.getElementById('content')
-    );
     </script>
   </body>
 </html>
