@@ -17,7 +17,7 @@ Assuming `lein` and clojure are installed. (They only take a minute)
 - `cd pomofront`
 - lein figwheel
 - browse to http://localhost:3449/
-- for registering to work, the back-end must be set up. Other site functionality should work already.
+- for registering to work, the back-end must be set up.
 
 
 Optional fields marked as OPTIONAL.
