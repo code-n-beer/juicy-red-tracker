@@ -3,9 +3,18 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var uuid = require('node-uuid');
 var app = express();
+var url = require('url');
+var pgServer = url.parse(process.env.DATABASE_URL);
 var knex = require('knex')({
   client: 'pg',
-  connection: process.env.DATABASE_URL
+  connection: {
+	  host: pgServer.hostname,
+	  port: pgServer.port,
+	  user: pgServer.auth.split(':')[0],
+	  password: pgServer.auth.split(':')[1],
+	  database: pgServer.path.substring(1),
+	  ssl: true
+  },
 });
 
 app.use(bodyParser.json());
