@@ -3,9 +3,18 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var uuid = require('node-uuid');
 var app = express();
+var url = require('url');
+var pgServer = url.parse(process.env.DATABASE_URL);
 var knex = require('knex')({
   client: 'pg',
-  connection: process.env.DATABASE_URL
+  connection: {
+	  host: pgServer.hostname,
+	  port: pgServer.port,
+	  user: pgServer.auth.split(':')[0],
+	  password: pgServer.auth.split(':')[1],
+	  database: pgServer.path.substring(1),
+	  ssl: true
+  },
 });
 
 app.use(bodyParser.json());
@@ -14,7 +23,7 @@ app.use(express.static('proto'));
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, accesstoken");
   next();
 });
 
@@ -33,6 +42,10 @@ function belongsToUser(user, tableName, id) {
 }
 
 function isAuthed(req, res, next) {
+  if (req.method === 'OPTIONS') {
+    res.status(200).send('OK');
+    return;
+  }
   const token = req.headers.accesstoken;
   if (!token) {
     res.status(403).json({error: 'No auth key'});
@@ -57,6 +70,7 @@ function isAuthed(req, res, next) {
 }
 
 app.post('/api/user/category/:categoryId/task', (req, res) => {
+  var user = req.user;
   const task = {
     category_id: req.params.categoryId,
     task_id: req.body.task_id || undefined,
@@ -101,7 +115,8 @@ app.post('/api/user/category', (req, res) => {
 });
 
 app.post('/api/user/task/:taskId/pomodoro', (req, res) => {
-  belongsToUser(user, 'task', req.params.taskId)
+  var user = req.user;
+  belongsToUser(req.user, 'task', req.params.taskId)
     .then((doesBelong) => {
       if (doesBelong) {
         const pomodoro = {
@@ -230,6 +245,10 @@ app.get('/api/user/pomodoro', (req, res) => {
     .then((pomodoros) => {
       res.json(pomodoros);
     });
+});
+
+app.get('/api/mock/tasks', (req, res) => {
+  res.json({tasks: ['School', 'Work', 'Sports', 'Games']});
 });
 
 app.get('/api/user', (req, res) => {
