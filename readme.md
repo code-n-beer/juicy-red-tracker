@@ -1,3 +1,16 @@
+Example back-end setup
+---
+- Create an account at [heroku.com](heroku.com) if you don't have one
+- Create a new (free / hobby / w/e) postgresql database
+- connect to it using f.ex `psql` (you can get a psql connection string from https://postgres.heroku.com/databases/)
+- paste `schema.sql` contents to the shell when connected to the db 
+- Get the DATABASE_URL which looks something like `postgres://someusername:fasdfasdfsdfsdf@ec2-fasdfasdfdffasfdd.eu-west-1.compute.amazonaws.com:5432/sdfaefas83498423` after creating the db at https://postgres.heroku.com/databases/ --> click the db --> under connection settings --> "URL", click show.
+- Create `run.sh`  at the root of the project
+- into it put `DATABASE_URL=<the-db-url-from-above> npm start` 
+- chmod +x run.sh
+- run it.
+
+
 Optional fields marked as OPTIONAL.
 ---
 New user: POST /api/user
