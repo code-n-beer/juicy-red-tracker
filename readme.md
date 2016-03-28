@@ -16,7 +16,8 @@ Example front-end setup
 Assuming `lein` and clojure are installed. (They only take a minute)
 - `cd pomofront`
 - lein figwheel
-- after starting the back-end, browse to http://localhost:3449/
+- browse to http://localhost:3449/
+- for registering to work, the back-end must be set up. Other site functionality should work already.
 
 
 Optional fields marked as OPTIONAL.
