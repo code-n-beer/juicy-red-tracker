@@ -8,17 +8,32 @@
 ;; Derpy functions
 ;; -------------------------
 
+(defn clj->json [d]
+  (.stringify js/JSON (clj->js d)))
+
+(defn login-response-success [response]
+  (.log js/console (clj->json response))
+  (session/put! :token (response :token)))
+
+(defn response-fail [response]
+  (.log js/console (clj->json response)))
+
 (defn register-handler [email password]
-  (let [object (clj->js {:email email :password password})]
+  (let [object (clj->json {:email email :password password})]
     (.log js/console object)
     (POST "http://localhost:3000/api/user" 
-          {:body object})))
+          {:body object
+          :error-handler response-fail
+          :format :json 
+          :handler login-response-success})))
 
 (defn login-handler [email password]
   (let [object (clj->js {:email email :password password})]
     (.log js/console object)
     (POST "http://localhost:3000/api/session" 
-          {:body object})))
+          {:body object 
+          :error-handler response-fail
+          :handler login-response-success})))
 
 
 (defn atom-trim-str [strink]
@@ -28,11 +43,10 @@
 ;; Views
 
 (defn home-page []
-  [:div [:h2 "Welcome to pomofront"]
+  [:div [:h2 "Welcome to Clojodoro"]
    [:div 
-    [:div [:a {:href "/about"} "go to about page"]]
-    [:div [:a {:href "/register"} "go to register page"]]
-    [:div [:a {:href "/login"} "go to login"]]
+    [:div [:a {:href "/about"} "About"]]
+    [:div [:a {:href "/register"} "Register"]]
     ]])
 
 (defn about-page []
@@ -55,18 +69,17 @@
         password (reagent/atom "")
         login #(login-handler (atom-trim-str email) (atom-trim-str password))]
     (fn [props]
-      [:div [:h2 "Login page"]
+      [:div
        [:input {:type "text" :value @email :on-change #(reset! email (-> % .-target .-value))}]
        [:input {:type "text" :value @password :on-change #(reset! password (-> % .-target .-value))}]
-       [:input {:type "button" :value "Log in!" :on-click login}]
-       [:div [:a {:href "/"} "go to the home page"]]])))
+       [:input {:type "button" :value "Log in!" :on-click login}]])))
 
 
 (defn current-page []
   [:div 
    [:div [(session/get :header)]]
-  [:div [(session/get :current-page)]])
-         ]]
+   [:div [(session/get :current-page)]]
+   ])
 
 ;; -------------------------
 ;; Routes
@@ -95,4 +108,5 @@
      (fn [path]
        (secretary/locate-route path))})
   (accountant/dispatch-current!)
+  (session/put! :header #'login-page)
   (mount-root))

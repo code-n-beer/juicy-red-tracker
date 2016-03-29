@@ -139,6 +139,9 @@ app.post('/api/user/task/:taskId/pomodoro', (req, res) => {
 });
 
 app.post('/api/user', (req, res) => {
+  console.log(req.body);
+  console.log(req.body.email);
+  console.log(req.body.password);
   knex('user')
     .returning('id')
     .insert({
@@ -151,6 +154,9 @@ app.post('/api/user', (req, res) => {
 });
 
 app.post('/api/session', (req, res) => {
+  console.log(req.body);
+  console.log(req.body.email);
+  console.log(req.body.password);
   knex('user')
     .where({
       email: req.body.email,
