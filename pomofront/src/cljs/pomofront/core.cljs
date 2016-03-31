@@ -3,6 +3,7 @@
             [reagent.session :as session]
             [secretary.core :as secretary :include-macros true]
             [ajax.core :refer [GET POST]]
+            [pomofront.user-bar :refer [get-login-stream-component]]
             [accountant.core :as accountant]))
 
 ;; Derpy functions
@@ -117,5 +118,6 @@
      (fn [path]
        (secretary/locate-route path))})
   (accountant/dispatch-current!)
-  (session/put! :header #'login-page)
+  ;(session/put! :header #'login-page)
+  (session/put! :header #'get-login-stream-component)
   (mount-root))
