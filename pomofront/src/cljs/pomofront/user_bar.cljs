@@ -1,12 +1,36 @@
 (ns pomofront.user-bar
   (:require [reagent.core :as reagent :refer [atom]]
             [reagent.session :as session]
-            [reagi.core :as r]
+            [reagi.core :as reagi]
+            [clojure.core.async :as a :refer [<!! chan]]
             [secretary.core :as secretary :include-macros true]
             [ajax.core :refer [GET POST]]
             [accountant.core :as accountant]))
+
+;;interactions handler
+;; -----------------------------------------------------------------
+(defn interaction (reagent/atom {}))
+
+(defn get-interaction [name-key]
+  (if-not (@interaction name-key)
+    (swap! interaction assoc name-key (reagent/atom 1)))
+  (@interaction name-key))
+
+;; interaction listener returns a function that when called 
+;; causes a redraw of components relying on that interaction
+(defn interaction-listener [interaction-name]
+  (let [ch (chan)
+        name-key (keyword interaction-name)]
+    (fn [& args]
+      (swap! (@interaction name-key) inc))))
+  
+
+(defn interactions [interaction-name]
+  )
+
+
 ;; UI markup
-;; -------------
+;; -----------------------------------------------------------------
 (defn login-component [{:keys [submit]}] ;; destructured react props
   [:form {:on-submit (fn [e] 
                        (.preventDefault e)
@@ -19,7 +43,7 @@
   [:div "terve terve juuser" token])
 
 ;; Other stuff
-;; -------------
+;; -----------------------------------------------------------------
 (defn clj->json [d]
   (.stringify js/JSON (clj->js d)))
 
@@ -47,7 +71,7 @@
 ;;(login-handler email password))
 
 (defn get-login-stream-component []
-  (let [stream (r/events {})
+  (let [stream (reagi/events {})
         ;submit #(->> (login-handler-handler %) (r/deliver stream))]
         submit #(->> (login-handler-handler %) (.log js/console "hhhhhhhhh"))]
     (fn []
@@ -56,3 +80,35 @@
         (.log js/console "drawing mister login stream")
         (.log js/console (props :token))
         (decide-component props)))))
+
+
+
+
+
+
+;interactions piilottaa tilamutaatiot
+; 
+
+
+interactions.get()
+.map()
+.ebin()
+.startWith()
+.map( bines => 
+            baynes)
+
+;
+
+;(let [stream (get-csv-stream "./resources/hourlist.csv")
+;    ch (chan)]
+;(r/subscribe stream ch)
+;(<!! ch) => ["Scott Scala", "2", "2.3.2014","6:00","14:00"])))
+;
+;
+;
+;(defn get-csv-stream [path] 
+;  (let [csv-stream (r/events)
+;        file-contents (slurp path)
+;        csv (parse-csv file-contents)]
+;    (go (doall (map #(r/deliver csv-stream %) csv)))
+;    csv-stream))
