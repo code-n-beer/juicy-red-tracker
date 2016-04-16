@@ -4,7 +4,7 @@
             [secretary.core :as secretary :include-macros true]
             [ajax.core :refer [GET POST]]
             ;[pomofront.user-bar :refer [get-login-stream-component]]
-            [pomofront.user-bar :refer [frp-test]]
+            [pomofront.user-bar :refer [frp-thing]]
             [accountant.core :as accountant]))
 
 ;; Derpy functions
@@ -120,5 +120,5 @@
        (secretary/locate-route path))})
   (accountant/dispatch-current!)
   ;(session/put! :header #'login-page)
-  (session/put! :header #'frp-test)
+  (session/put! :header #'frp-thing)
   (mount-root))
