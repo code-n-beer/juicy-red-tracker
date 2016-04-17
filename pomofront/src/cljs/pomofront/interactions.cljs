@@ -7,10 +7,8 @@
             [ajax.core :refer [GET POST]]
             [accountant.core :as accountant]))
 
-
-;;
-;; -----------------------
 ;; frp
+;; -----------------------
 (defonce interaction (reagent/atom {}))
 
 ;; we create it here since it might be called again afterwards
@@ -21,6 +19,7 @@
   (@interaction name-key)))
 
 (defn act [funcs actable]
+  (.log js/console "actin")
   (let [result
         (reduce
           (fn [acc func]
@@ -33,6 +32,7 @@
 ;; interaction listener returns a function that when called
 ;; causes a redraw of components relying on that interaction
 (defn interactions [interaction-name & funcs]
+  (.log js/console "interactions asdfasdf")
   (let [name-key (keyword interaction-name)]
     (fn [& args]
       (act funcs (@interaction name-key)))))
