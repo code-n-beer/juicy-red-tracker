@@ -1,12 +1,6 @@
 (ns pomofront.user-bar
   (:require [pomofront.interactions :refer [get-interaction interactions]]))
 
-(defn frp-thing []
-      [:div "The count is:" @(get-interaction {:name "clicker" :init-val 0})
-       [:div
-       [:button {:on-click (interactions "clicker" inc)} "up"]
-       [:button {:on-click (interactions "clicker" dec)} "down"]]])
-
 ;(defn clj->json [d]
 ;  (.stringify js/JSON (clj->js d)))
 ;
@@ -49,20 +43,13 @@
   [:div "juu aar nau lokked in"])
 
 (defn submit-interaction []
-  (.log js/console "tryin loggin")
-  (.log js/console "sinep")
-  (interactions "user-bar"
-                (fn [oldval] 
-                  (.log js/console "ohai")
-                  (user-detail))))
-
-(defn submit [listener]
-  (fn [e]
-    (.preventDefault e)
-    (listener)))
+  (let [listener (interactions "user-bar" #(user-detail))]
+    (fn [e]
+      (.preventDefault e)
+      (listener))))
 
 (defn login-form []
-  [:form {:on-submit (submit (submit-interaction))}
+  [:form {:on-submit (submit-interaction)}
    [:input {:type "text" :name "email"}]
    [:input {:type "text" :name "password"}]
    [:input {:type "submit" :value "Log in nao?"}]])
