@@ -3,38 +3,18 @@
             [ajax.core :refer [GET POST]]
             [reagent.session :as session]
             [reagent.core :as reagent]))
-;
-;(defn register-handler [email password]
-;  (let [object (clj->json {:email email :password password})]
-;    (.log js/console object)
-;    (POST "http://localhost:3000/api/user" 
-;          {:body object
-;          :headers {:Content-Type "application/json"}
-;          :error-handler response-fail
-;          :handler register-response-success})))
-;
-;(defn register-response-success [response]
-;  (.log js/console (clj->json response)))
-;
 
 (defn clj->json [d]
   (.stringify js/JSON (clj->js d)))
 
- (defn login-response-success [response email]
-   (.log js/console "login success!")
-   (.log js/console (clj->json response))
-   (.log js/console "print response")
-   ;(session/put! :token (response :token))
-   (.log js/console "session put")
+ (defn login-response-success [[[response]] email] ; interactions lib currently nests the arguments to an arr...
+   (.log js/console "login response success" (clj->json response))
+   (session/put! :token (response :token))
    (declare user-detail)
-   (.log js/console "return user-detail")
-   [user-detail email]
-   ;(session/put! :header #'user-header)
-   )
+   [user-detail email])
 
 (defn user-detail [email]
-  (fn []
-      [:div [:p "juu aar nau lokked in " [:strong email]]]))
+  [:div [:p "user: "[:strong email] ", juu aar nau lokked in " ]])
 
 (defn login-form []
   (declare login-handler)
@@ -47,11 +27,8 @@
        [:input {:type "text" :value @password :on-change #(reset! password (-> % .-target .-value))}]
        [:input {:type "button" :value "Log in!" :on-click #(listener)}]])))
 
-(defn response-fail [response]
-  (.log js/console "response fail" (clj->json response)))
-
 (defn login-response-fail [response]
-  (.log js/console "response fail" (clj->json response))
+  (.log js/console "login response fail" (clj->json response))
   [login-form])
 
 (defn user-bar []
