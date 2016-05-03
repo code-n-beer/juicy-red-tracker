@@ -41,7 +41,6 @@
 (defn login-handler [email password]
   (let [object (clj->json {:email email :password password})
         login-state (get-interaction {:name "login-state" :init-val [:div "Logging in..."]})]
-    (.log js/console object)
     (POST "http://localhost:3000/api/session" 
           {:body object 
           :headers {:Content-Type "application/json"}
