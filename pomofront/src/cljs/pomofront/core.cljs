@@ -3,6 +3,7 @@
             [reagent.session :as session]
             [secretary.core :as secretary :include-macros true]
             [ajax.core :refer [GET POST]]
+            [pomofront.user-bar :refer [user-bar]]
             [accountant.core :as accountant]))
 
 ;; Derpy functions
@@ -31,16 +32,6 @@
           :headers {:Content-Type "application/json"}
           :error-handler response-fail
           :handler register-response-success})))
-
-(defn login-handler [email password]
-  (let [object (clj->json {:email email :password password})]
-    (.log js/console object)
-    (POST "http://localhost:3000/api/session" 
-          {:body object 
-          :headers {:Content-Type "application/json"}
-          :error-handler response-fail
-          :handler login-response-success})))
-
 
 (defn atom-trim-str [strink]
   (-> @strink str clojure.string/trim))
@@ -72,17 +63,6 @@
        [:input {:type "text" :value @password :on-change #(reset! password (-> % .-target .-value))}]
        [:input {:type "button" :value "Register!" :on-click register}]
        [:div [:a {:href "/"} "Back home"]]])))
-
-(defn login-page[]
-  (let [email (reagent/atom "")
-        password (reagent/atom "")
-        login #(login-handler (atom-trim-str email) (atom-trim-str password))]
-    (fn [props]
-      [:div
-       [:input {:type "text" :value @email :on-change #(reset! email (-> % .-target .-value))}]
-       [:input {:type "text" :value @password :on-change #(reset! password (-> % .-target .-value))}]
-       [:input {:type "button" :value "Log in!" :on-click login}]])))
-
 
 (defn current-page []
   [:div 
@@ -117,5 +97,5 @@
      (fn [path]
        (secretary/locate-route path))})
   (accountant/dispatch-current!)
-  (session/put! :header #'login-page)
+  (session/put! :header #'user-bar)
   (mount-root))
