@@ -3,7 +3,6 @@
             [reagent.session :as session]
             [secretary.core :as secretary :include-macros true]
             [ajax.core :refer [GET POST]]
-            ;[pomofront.user-bar :refer [get-login-stream-component]]
             [pomofront.user-bar :refer [user-bar]]
             [accountant.core :as accountant]))
 

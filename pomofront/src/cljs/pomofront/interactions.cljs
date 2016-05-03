@@ -1,16 +1,6 @@
 (ns pomofront.interactions
-  (:require [reagent.core :as reagent :refer [atom]]
-            [reagent.session :as session]
-            [reagi.core :as reagi]
-            [cljs.core.async :as a :refer [<! ]]
-            [secretary.core :as secretary :include-macros true]
-            [ajax.core :refer [GET POST]]
-            [accountant.core :as accountant]))
+  (:require [reagent.core :as reagent :refer [atom]]))
 
-
-;;
-;; -----------------------
-;; frp
 (defonce interaction (reagent/atom {}))
 
 ;; we create it here since it might be called again afterwards
