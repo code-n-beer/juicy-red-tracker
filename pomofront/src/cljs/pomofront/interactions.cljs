@@ -21,6 +21,7 @@
   (@interaction name-key)))
 
 (defn act [funcs actable]
+  ;(.log js/console "before acting" @(get-interaction {:name "user-bar" :init-val [login-form]}))
   (let [result
         (reduce
           (fn [acc func]
@@ -28,11 +29,13 @@
           @actable
           funcs)]
     (reset! actable result)
+    (reagent/force-update-all)
+  ;(.log js/console "after acting" @(get-interaction {:name "user-bar" :init-val [login-form]}))
     actable))
 
 ;; interaction listener returns a function that when called
 ;; causes a redraw of components relying on that interaction
 (defn interactions [interaction-name & funcs]
   (let [name-key (keyword interaction-name)]
-    (fn [& args]
+    (fn [] ; & args
       (act funcs (@interaction name-key)))))

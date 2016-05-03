@@ -1,5 +1,6 @@
 (ns pomofront.user-bar
-  (:require [pomofront.interactions :refer [get-interaction interactions]]))
+  (:require [pomofront.interactions :refer [get-interaction interactions]]
+            [reagent.core :as reagent]))
 
 ;(defn clj->json [d]
 ;  (.stringify js/JSON (clj->js d)))
@@ -35,25 +36,36 @@
 ;          :handler login-response-success})))
 ;
 ;
-;(defn atom-trim-str [strink]
-;  (-> @strink str clojure.string/trim))
+(defn atom-trim-str [strink]
+  (-> @strink str clojure.string/trim))
 
-;-------------
 (defn user-detail []
-  [:div "juu aar nau lokked in"])
+  (fn []
+      [:div [:p "juu aar nau lokked in"]]))
 
-(defn submit-interaction []
-  (let [listener (interactions "user-bar" #(user-detail))]
-    (fn [e]
-      (.preventDefault e)
-      (listener))))
+(defn login-handler [email password]
+  (.log js/console @email @password)
+  ;(atom-trim-str email)
+  ;(atom-trim-str password)
+  (user-detail))
 
 (defn login-form []
-  [:form {:on-submit (submit-interaction)}
-   [:input {:type "text" :name "email"}]
-   [:input {:type "text" :name "password"}]
-   [:input {:type "submit" :value "Log in nao?"}]])
+  (let [email (reagent/atom "")
+        password (reagent/atom "")
+        listener (interactions "user-bar" (fn [x] [user-detail]))]
+    (fn []
+      [:div
+       [:input {:type "text" :value @email :on-change #(reset! email (-> % .-target .-value))}]
+       [:input {:type "text" :value @password :on-change #(reset! password (-> % .-target .-value))}]
+       [:input {:type "button" :value "Log in!" :on-click #(listener)}]])))
 
 (defn user-bar []
-  @(get-interaction {:name "user-bar" :init-val (login-form)}))
+  (.log js/console "derpa herp")
+  (let [content (get-interaction {:name "user-bar" :init-val [login-form]})]
+    (fn []
+      (.log js/console "hurpa d;rp")
+      (.log js/console @content)
+      (.log js/console "soosit")
+      @content)))
+;        interaction @(get-interaction {:name "user-bar" :init-val form})]))
 
