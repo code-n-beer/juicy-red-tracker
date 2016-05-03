@@ -31,20 +31,25 @@
   (.log js/console "login response fail" (clj->json response))
   [login-form])
 
-(defn user-bar []
-  (let [content (get-interaction {:name "user-bar" :init-val [login-form]})]
-    (fn []
-      @content)))
+(defn login-post [object on-success on-error]
+  (POST "http://localhost:3000/api/session"
+          {:body object
+          :headers {:Content-Type "application/json"}
+          :error-handler on-error
+          :handler on-success}))
 
 ;; if the component always on first create runs the POST like it does now it will overwrite rejuvenated state
 ;; with a login using empty email and password
 (defn login-handler [email password]
   (let [object (clj->json {:email email :password password})
-        login-state (get-interaction {:name "login-state" :init-val [:div "Logging in..."]})]
-    (POST "http://localhost:3000/api/session" 
-          {:body object 
-          :headers {:Content-Type "application/json"}
-          :error-handler (interactions "user-bar" (fn [x response] [login-response-fail response]))
-          :handler (interactions "login-state" (fn [x response] [login-response-success response email]))})
-    (fn [] 
+        login-state (get-interaction {:name "login-state" :init-val [:div "Logging in..."]})
+        on-success (interactions "login-state" (fn [x response] [login-response-success response email]))
+        on-error (interactions "user-bar" (fn [x response] [login-response-fail response]))]
+    (login-post object on-success on-error)
+    (fn []
       @login-state)))
+
+;; it all begins by rendering this component
+(defn user-bar []
+  @(get-interaction {:name "user-bar" :init-val [login-form]}))
+
