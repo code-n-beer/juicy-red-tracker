@@ -1,5 +1,5 @@
 (ns pomofront.user-bar
-  (:require [pomofront.interactions :refer [get-interaction interactions]]
+  (:require [pomofront.interactions :refer [get-state set-state]]
             [ajax.core :refer [GET POST]]
             [reagent.session :as session]
             [reagent.core :as reagent]))
@@ -20,7 +20,7 @@
   (declare login-handler)
   (let [email (reagent/atom "")
         password (reagent/atom "")
-        listener (interactions "user-bar" (fn [x] [login-handler @email @password]))]
+        listener (set-state "user-bar" (fn [x] [login-handler @email @password]))]
     (fn []
       [:div
        [:input {:type "text" :value @email :on-change #(reset! email (-> % .-target .-value))}]
@@ -42,14 +42,14 @@
 ;; with a login using empty email and password
 (defn login-handler [email password]
   (let [object (clj->json {:email email :password password})
-        login-state (get-interaction {:name "login-state" :init-val [:div "Logging in..."]})
-        on-success (interactions "login-state" (fn [x response] [login-response-success response email]))
-        on-error (interactions "user-bar" (fn [x response] [login-response-fail response]))]
+        login-state (get-state {:name "login-state" :init-val [:div "Logging in..."]})
+        on-success (set-state "login-state" (fn [x response] [login-response-success response email]))
+        on-error (set-state "user-bar" (fn [x response] [login-response-fail response]))]
     (login-post object on-success on-error)
     (fn []
       @login-state)))
 
 ;; it all begins by rendering this component
 (defn user-bar []
-  @(get-interaction {:name "user-bar" :init-val [login-form]}))
+  @(get-state {:name "user-bar" :init-val [login-form]}))
 
