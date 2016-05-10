@@ -16,14 +16,11 @@
 (defn on-success [response]
   (re-frame/dispatch [:login-success (response :token) :user-detail]))
 
-(defn login-post [object]
+(defn login-post [email passwd]
   (POST-un-authed "/api/session"
-        object
+        {:email email :password passwd}
         on-success
         on-error))
-
-(defn click-listener [email passwd]
-  (login-post {:email email :password passwd}))
 
 (defn login-form []
   (let [email (atom "")
@@ -32,12 +29,12 @@
       [:div
        [:input {:type "text" :value @email :on-change #(reset! email (-> % .-target .-value))}]
        [:input {:type "text" :value @password :on-change #(reset! password (-> % .-target .-value))}]
-       [:input {:type "button" :value "Log in!" :on-click #(click-listener @email @password)}]])))
+       [:input {:type "button" :value "Log in!" :on-click #(login-post @email @password)}]])))
 
 (defn logged-in []
   (let [token (re-frame/subscribe [:token])]
     (fn []
-      [:div "humpty dumpty ey ey, here's your token: " @token])))
+      [:div "Hi user, here's your accesstoken: " @token])))
 
 (defmulti bars identity)
 (defmethod bars :login [] [login-form])

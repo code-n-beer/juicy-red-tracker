@@ -15,26 +15,42 @@
 (defn text-input [data-atom]
   [:input {:type "text" :value @data-atom :on-change #(reset! data-atom (-> % .-target .-value))}])
 
-(defn start-pomodoro [name category length]
-  (re-frame/dispatch [:start-pomodoro name category length]))
-
 (defn get-user []
   (GET "/api/user/" nil #(re-frame/dispatch [:set-user %]) on-error))
 
 
 ;; -------------------------- new pomodoros
+(defn start-pomodoro [length task-id]
+  (re-frame/dispatch [:start-pomodoro length task-id]))
+
 (defn new-pomodoro []
   (let [length (atom 25)
-        pomodoro-name (atom "")]
+        task-id (atom "")]
     (fn []
       [:div
        [:h4 "New pomodoro"]
-
        [:div "Length: " [text-input length] " minutes. "]
+       [:div "Parent task id:" [text-input task-id]]
+       [:input {:type "button" :value "start" :on-click #(start-pomodoro @length @task-id)}]])))
 
-       [:div "Name: " [text-input pomodoro-name]]
 
-       [:input {:type "button" :value "start" :on-click #(start-pomodoro @pomodoro-name "ses" @length)}]])))
+;; ------------------------- currently running pomodoro 
+(defn post-pomodoro [task-id length]
+  (POST (str "/api/user/task/" task-id "/pomodoro") {:minutes length :success true} #(get-user) on-error)
+  (re-frame/dispatch [:stop-pomodoro]))
+
+(defn running-pomodoro []
+  (let [running-pomodoro (re-frame/subscribe [:running-pomodoro])]
+    (fn []
+      [:div
+       [:h4 "Running pomodoro"]
+       (if (some? @running-pomodoro)
+         [:div "running! " (to-json @running-pomodoro)
+          [:div 
+           [:input {:type "button"
+                    :value "finish"
+                    :on-click #(post-pomodoro (@running-pomodoro :task-id) (@running-pomodoro :length))}]]]
+         [:div "not running"])])))
 
 
 ;; -------------------------- categories 
@@ -68,17 +84,6 @@
         [text-input task-name]]
        [:input {:type "button" :value "create" :on-click #(post-task @task-name @category-id)}]])))
 
-
-;; ------------------------- currently running pomodoro 
-(defn running-pomodoro []
-  (let [running-pomodoro (re-frame/subscribe [:running-pomodoro])]
-    (fn []
-      [:div
-       [:h4 "Running pomodoro"]
-       (if (some? @running-pomodoro)
-         [:div "has current pomo " @running-pomodoro])
-       [:div ""]
-       ])))
 
 (defn pomodoro []
   [:div 

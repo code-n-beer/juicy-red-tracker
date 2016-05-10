@@ -26,9 +26,14 @@
 
 (re-frame/register-handler
   :start-pomodoro
-  (fn [db [_ name category time]]
+  (fn [db [_ length task-id]]
     (js/console.log "name: " name)
-    (assoc db :running-pomodoro {:name name :category category :time time :started (.getTime (js/Date.))})))
+    (assoc db :running-pomodoro {:length length :task-id task-id :started (.getTime (js/Date.))})))
+
+(re-frame/register-handler
+  :stop-pomodoro
+  (fn [db _]
+    (assoc db :running-pomodoro nil)))
 
 
 (re-frame/register-handler
