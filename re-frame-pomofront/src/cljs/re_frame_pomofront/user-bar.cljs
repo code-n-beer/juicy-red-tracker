@@ -1,7 +1,7 @@
 (ns re-frame-pomofront.user-bar
   (:require [re-frame.core :as re-frame]
             [reagent.core :as reagent :refer [atom]]
-            [re-frame-pomofront.session :refer [POST]]))
+            [re-frame-pomofront.session :refer [POST-un-authed]]))
             ;[ajax.core :refer [GET POST]]))
 
 (def host (str js/window.location.host))
@@ -17,13 +17,13 @@
   (re-frame/dispatch [:login-success (response :token) :user-detail]))
 
 (defn login-post [object]
-  (POST "/api/session"
+  (POST-un-authed "/api/session"
         object
         on-success
         on-error))
 
 (defn click-listener [email passwd]
-  (login-post (clj->json {:email email :password passwd})))
+  (login-post {:email email :password passwd}))
 
 (defn login-form []
   (let [email (atom "")

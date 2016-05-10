@@ -2,10 +2,17 @@
   (:require [re-frame.core :as re-frame]
             [reagent.core :as reagent :refer [atom]]
             [re-frame-pomofront.users-pomodoros :refer [old-pomodoros]]
+            [re-frame-pomofront.session :refer [GET POST]]
             ))
 
-(defn clj->json [d]
+(defn to-json [d]
   (.stringify js/JSON (clj->js d)))
+
+(defn on-error [response]
+  (js/console.log (to-json response)))
+
+(defn text-input [data-atom]
+  [:input {:type "text" :value @data-atom :on-change #(reset! data-atom (-> % .-target .-value))}])
 
 (defn start-pomodoro [name category length]
   (re-frame/dispatch [:start-pomodoro name category length]))
@@ -19,18 +26,31 @@
       [:div
        [:h4 "New pomodoro"]
 
-       [:div "Length: "
-        [:input {:type "text"
-                 :value @length
-                 :on-change #(reset! length (-> % .-target .-value))}]
-        " minutes. "]
+       [:div "Length: " [text-input length] " minutes. "]
 
-       [:div "Name: "
-        [:input {:type "text"
-                 :value @pomodoro-name
-                 :on-change #(reset! pomodoro-name (-> % .-target .-value))}]]
+       [:div "Name: " [text-input pomodoro-name]]
 
        [:input {:type "button" :value "start" :on-click #(start-pomodoro @pomodoro-name "ses" @length)}]])))
+
+
+(defn get-categories []
+  (GET "/api/user/category/" nil #(re-frame/dispatch [:update-categories %]) on-error))
+
+(defn new-category-success [response cat-name]
+  (js/console.log (to-json response))
+  (get-categories))
+
+(defn post-category [cat-name]
+  (POST "/api/user/category/" {:name cat-name} #(new-category-success % cat-name) on-error))
+
+(defn new-category []
+  (let [category-name (atom "")]
+    (fn []
+      [:div
+       [:h4 "New category"]
+       [:div "Name: " 
+        [text-input category-name]]
+       [:input {:type "button" :value "create" :on-click #(post-category @category-name)}]])))
 
 (defn running-pomodoro []
   (let [running-pomodoro (re-frame/subscribe [:running-pomodoro])]
@@ -46,4 +66,5 @@
   [:div 
    [new-pomodoro]
    [running-pomodoro]
+   [new-category]
    [old-pomodoros]])

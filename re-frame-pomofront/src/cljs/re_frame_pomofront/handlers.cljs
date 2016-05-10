@@ -2,6 +2,9 @@
     (:require [re-frame.core :as re-frame]
               [re-frame-pomofront.db :as db]))
 
+(defn to-json [d]
+  (.stringify js/JSON (clj->js d)))
+
 (re-frame/register-handler
  :initialize-db
  (fn  [_ _]
@@ -28,3 +31,18 @@
     (assoc db :running-pomodoro {:name name :category category :time time :started (.getTime (js/Date.))})))
 
 
+(re-frame/register-handler
+  :set-user
+  (fn [db [_ response]]
+    (assoc db :user-data response)))
+
+(re-frame/register-handler
+  :update-user
+  (fn [db [_ where what]]
+    (update-in db (cons :user-data where) what)))
+
+(re-frame/register-handler
+  :update-categories
+  (fn [db [_ what]]
+    (js/console.log (to-json what))
+    (assoc-in db [:user-data :categories] what)))
