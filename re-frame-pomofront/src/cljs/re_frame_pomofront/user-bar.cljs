@@ -1,12 +1,12 @@
 (ns re-frame-pomofront.user-bar
-    (:require [re-frame.core :as re-frame]
-              [reagent.core :as reagent :refer [atom]]
-              [ajax.core :refer [GET POST]]))
+  (:require [re-frame.core :as re-frame]
+            [reagent.core :as reagent :refer [atom]]
+            [ajax.core :refer [GET POST]]))
 
 (def host (str js/window.location.host))
 
 (defn clj->json [d]
-    (.stringify js/JSON (clj->js d)))
+  (.stringify js/JSON (clj->js d)))
 
 (defn on-error [response]
   (js/console.log "don't do much I guess")
@@ -18,10 +18,12 @@
 (defn login-post [object]
   ;(POST "http://localhost:3000/api/session"
   (POST "http://hypsy.fi:3001/api/session"
-          {:body object
-          :headers {:Content-Type "application/json"}
-          :error-handler on-error
-          :handler on-success}))
+        {:body object
+         :headers {:Content-Type "application/json"}
+         :error-handler on-error
+         :reponse-format :json
+         :keywords? true
+         :handler on-success}))
 
 (defn click-listener [email passwd]
   (login-post (clj->json {:email email :password passwd})))
@@ -38,7 +40,7 @@
 (defn logged-in []
   (let [current-user (re-frame/subscribe [:token])]
     (fn []
-      [:div "humpty dumpty ey ey " current-user])))
+      [:div "humpty dumpty ey ey, here's your token: " current-user])))
 
 (defmulti bars identity)
 (defmethod bars :login [] [login-form])
@@ -52,5 +54,5 @@
 (defn user-bar [props]
   (let [current-bar (re-frame/subscribe [:current-bar])]
     (fn []
-      [:div "heyoo"
+      [:div "heyoo, I'm an obnoxious bar that is always visible at the top of the page"
        [show-bar @current-bar]])))

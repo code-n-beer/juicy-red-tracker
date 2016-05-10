@@ -21,3 +21,8 @@
  :token
  (fn [db _]
    (reaction (:current-user @db))))
+
+(re-frame/register-sub
+ :running-pomodoro
+ (fn [db _]
+   (reaction (:running-pomodoro @db))))
