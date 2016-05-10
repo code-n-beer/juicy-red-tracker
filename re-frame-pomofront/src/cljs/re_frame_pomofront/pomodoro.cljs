@@ -48,9 +48,8 @@
         result-seconds (js/Math.floor result-seconds-f)
         result-seconds-mod (mod result-seconds 60)
         result-minutes-f (/ result-seconds 60)
-        result-minutes (js/Math.floor result-minutes-f)
-        result-minutes-minus-one (- result-minutes 1)]
-    (reset! timer-atom (str result-minutes-minus-one "min " result-seconds-mod "sec left"))))
+        result-minutes (js/Math.floor result-minutes-f)]
+    (reset! timer-atom (str result-minutes "min " result-seconds-mod "sec left"))))
 
 (defn running-pomodoro []
   (let [running-pomodoro (re-frame/subscribe [:running-pomodoro])
