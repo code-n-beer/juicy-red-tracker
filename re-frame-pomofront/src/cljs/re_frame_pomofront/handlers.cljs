@@ -15,11 +15,9 @@
 
 (re-frame/register-handler
   :login-success
-  (fn [db [_ response component]]
-    (js/console.log "response: " response)
-    (js/console.log "response token: " (response :token))
-    (js/console.log "component " component)
-    (assoc db :token (response :token)
+  (fn [db [_ token component]]
+    (js/console.log "handler token " token)
+    (assoc db :token token 
            :current-bar :user-detail
            :active-panel :pomodoro-panel)))
 

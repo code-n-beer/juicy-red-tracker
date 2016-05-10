@@ -3,7 +3,6 @@
               [re-frame-pomofront.user-bar :refer [user-bar]]
               [re-frame-pomofront.pomodoro :refer [pomodoro]]))
 
-
 ;; home
 
 (defn home-panel []

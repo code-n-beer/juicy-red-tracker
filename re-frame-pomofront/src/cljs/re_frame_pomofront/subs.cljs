@@ -20,7 +20,7 @@
 (re-frame/register-sub
  :token
  (fn [db _]
-   (reaction (:current-user @db))))
+   (reaction (:token @db))))
 
 (re-frame/register-sub
  :running-pomodoro
