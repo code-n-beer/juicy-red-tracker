@@ -5,6 +5,7 @@
             [re-frame-pomofront.session :refer [GET POST]]
             ))
 
+;; -------------------------- convenience funcs 
 (defn to-json [d]
   (.stringify js/JSON (clj->js d)))
 
@@ -16,9 +17,12 @@
 
 (defn start-pomodoro [name category length]
   (re-frame/dispatch [:start-pomodoro name category length]))
-; (fn [db [name category time]]
+
+(defn get-user []
+  (GET "/api/user/" nil #(re-frame/dispatch [:set-user %]) on-error))
 
 
+;; -------------------------- new pomodoros
 (defn new-pomodoro []
   (let [length (atom 25)
         pomodoro-name (atom "")]
@@ -33,15 +37,9 @@
        [:input {:type "button" :value "start" :on-click #(start-pomodoro @pomodoro-name "ses" @length)}]])))
 
 
-(defn get-categories []
-  (GET "/api/user/category/" nil #(re-frame/dispatch [:update-categories %]) on-error))
-
-(defn new-category-success [response cat-name]
-  (js/console.log (to-json response))
-  (get-categories))
-
+;; -------------------------- categories 
 (defn post-category [cat-name]
-  (POST "/api/user/category/" {:name cat-name} #(new-category-success % cat-name) on-error))
+  (POST "/api/user/category/" {:name cat-name} #(get-user) on-error))
 
 (defn new-category []
   (let [category-name (atom "")]
@@ -52,6 +50,26 @@
         [text-input category-name]]
        [:input {:type "button" :value "create" :on-click #(post-category @category-name)}]])))
 
+
+;; ------------------------- tasks 
+(defn post-task [task-name cat-id]
+  (POST (str "/api/user/category/" cat-id "/task") {:name task-name} #(get-user) on-error))
+
+(defn new-task []
+  (let [task-name (atom "")
+        category-id (atom "")]
+    (fn []
+      [:div
+       [:h4 "New task"]
+       [:div 
+        "Category id: "
+        [text-input category-id]
+        "Task name: "
+        [text-input task-name]]
+       [:input {:type "button" :value "create" :on-click #(post-task @task-name @category-id)}]])))
+
+
+;; ------------------------- currently running pomodoro 
 (defn running-pomodoro []
   (let [running-pomodoro (re-frame/subscribe [:running-pomodoro])]
     (fn []
@@ -67,4 +85,5 @@
    [new-pomodoro]
    [running-pomodoro]
    [new-category]
+   [new-task]
    [old-pomodoros]])
