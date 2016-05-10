@@ -39,17 +39,32 @@
   (POST (str "/api/user/task/" task-id "/pomodoro") {:minutes length :success true} #(get-user) on-error)
   (re-frame/dispatch [:stop-pomodoro]))
 
+(defn counter [timer-atom length started]
+  (let [now (.getTime (js/Date.))
+        length-num (js/parseInt length)
+        length-milliseconds (* length-num 60 1000)
+        result-milliseconds (- (+ length-milliseconds started) now)
+        result-seconds-f (/ result-milliseconds 1000)
+        result-seconds (js/Math.floor result-seconds-f)
+        result-seconds-mod (mod result-seconds 60)
+        result-minutes-f (/ result-seconds 60)
+        result-minutes (js/Math.floor result-minutes-f)
+        result-minutes-minus-one (- result-minutes 1)]
+    (reset! timer-atom (str result-minutes-minus-one "min " result-seconds-mod "sec left"))))
+
 (defn running-pomodoro []
-  (let [running-pomodoro (re-frame/subscribe [:running-pomodoro])]
+  (let [running-pomodoro (re-frame/subscribe [:running-pomodoro])
+        timer (atom 0)]
     (fn []
       [:div
        [:h4 "Running pomodoro"]
        (if (some? @running-pomodoro)
-         [:div "running! " (to-json @running-pomodoro)
+         (do (js/setTimeout #(counter timer (@running-pomodoro :length) (@running-pomodoro :started)) 1000)
+         [:div "running! " @timer
           [:div 
            [:input {:type "button"
                     :value "finish"
-                    :on-click #(post-pomodoro (@running-pomodoro :task-id) (@running-pomodoro :length))}]]]
+                    :on-click #(post-pomodoro (@running-pomodoro :task-id) (@running-pomodoro :length))}]]])
          [:div "not running"])])))
 
 
