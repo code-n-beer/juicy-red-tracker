@@ -1,4 +1,4 @@
-(ns re-frame-pomofront.users-pomodoros
+(ns re-frame-pomofront.views.users-pomodoros
   (:require [re-frame.core :as re-frame]
             [reagent.core :as reagent :refer [atom]]
             [re-frame-pomofront.session :refer [GET POST]]))

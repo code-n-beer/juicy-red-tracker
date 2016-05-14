@@ -3,7 +3,7 @@
             [reagent.core :as reagent :refer [atom]]
             [ajax.core :as ajax]))
 
-(def api-url "http://hypsy.fi:3001")
+(def api-url "http://localhost:3000")
 
 (defn to-json [d]
   (.stringify js/JSON (clj->js d)))

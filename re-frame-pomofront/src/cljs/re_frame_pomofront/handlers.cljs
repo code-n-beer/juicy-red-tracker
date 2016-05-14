@@ -19,7 +19,6 @@
 (re-frame/register-handler
   :login-success
   (fn [db [_ token component]]
-    (js/console.log "handler token " token)
     (assoc db :token token 
            :current-bar :user-detail
            :active-panel :pomodoro-panel)))
@@ -27,7 +26,6 @@
 (re-frame/register-handler
   :start-pomodoro
   (fn [db [_ length task-id]]
-    (js/console.log "name: " name)
     (assoc db :running-pomodoro {:length length :task-id task-id :started (.getTime (js/Date.))})))
 
 (re-frame/register-handler
@@ -49,5 +47,4 @@
 (re-frame/register-handler
   :update-categories
   (fn [db [_ what]]
-    (js/console.log (to-json what))
     (assoc-in db [:user-data :categories] what)))

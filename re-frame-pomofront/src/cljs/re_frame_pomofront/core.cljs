@@ -4,14 +4,14 @@
               [re-frame-pomofront.handlers]
               [re-frame-pomofront.subs]
               [re-frame-pomofront.routes :as routes]
-              [re-frame-pomofront.views :as views]
+              [re-frame-pomofront.views.root :as root]
               [re-frame-pomofront.config :as config]))
 
 (when config/debug?
   (println "dev mode"))
 
 (defn mount-root []
-  (reagent/render [views/main-panel]
+  (reagent/render [root/main-panel]
                   (.getElementById js/document "app")))
 
 (defn ^:export init [] 

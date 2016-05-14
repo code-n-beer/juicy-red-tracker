@@ -1,7 +1,8 @@
-(ns re-frame-pomofront.pomodoro
+(ns re-frame-pomofront.views.pomodoro
   (:require [re-frame.core :as re-frame]
             [reagent.core :as reagent :refer [atom]]
-            [re-frame-pomofront.users-pomodoros :refer [old-pomodoros]]
+            [re-frame-pomofront.views.users-pomodoros :refer [old-pomodoros]]
+            [re-frame-pomofront.views.dropdown-component :refer [dropdown]]
             [re-frame-pomofront.session :refer [GET POST]]
             ))
 
@@ -51,19 +52,26 @@
         result-minutes (js/Math.floor result-minutes-f)]
     (reset! timer-atom (str result-minutes "min " result-seconds-mod "sec left"))))
 
-(defn running-pomodoro []
-  (let [running-pomodoro (re-frame/subscribe [:running-pomodoro])
+(defn running-pomodoro [pomo]
+  (let [length (@pomo :length)
+        started (@pomo :started)
+        task-id (@pomo :task-id)
         timer (atom 0)]
+    (fn []
+      (js/setTimeout #(counter timer length started) 1000)
+      [:div "running! " @timer
+       [:div 
+        [:input {:type "button"
+                 :value "finish"
+                 :on-click #(post-pomodoro task-id length)}]]])))
+
+(defn pomodoro-component []
+  (let [pomodoro (re-frame/subscribe [:running-pomodoro])]
     (fn []
       [:div
        [:h4 "Running pomodoro"]
-       (if (some? @running-pomodoro)
-         (do (js/setTimeout #(counter timer (@running-pomodoro :length) (@running-pomodoro :started)) 1000)
-         [:div "running! " @timer
-          [:div 
-           [:input {:type "button"
-                    :value "finish"
-                    :on-click #(post-pomodoro (@running-pomodoro :task-id) (@running-pomodoro :length))}]]])
+       (if (some? @pomodoro)
+         [running-pomodoro pomodoro]
          [:div "not running"])])))
 
 
@@ -87,13 +95,15 @@
 
 (defn new-task []
   (let [task-name (atom "")
-        category-id (atom "")]
+        category-id (atom "")
+        categories (re-frame/subscribe [:categories])
+        selected-category (atom "")]
     (fn []
       [:div
        [:h4 "New task"]
        [:div 
-        "Category id: "
-        [text-input category-id]
+        "Category"
+        (if @categories [dropdown categories selected-category])
         "Task name: "
         [text-input task-name]]
        [:input {:type "button" :value "create" :on-click #(post-task @task-name @category-id)}]])))
@@ -102,7 +112,7 @@
 (defn pomodoro []
   [:div 
    [new-pomodoro]
-   [running-pomodoro]
+   [pomodoro-component] ;; y u not consistent ;___;
    [new-category]
    [new-task]
    [old-pomodoros]])

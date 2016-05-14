@@ -1,4 +1,4 @@
-(ns re-frame-pomofront.user-bar
+(ns re-frame-pomofront.views.user-bar
   (:require [re-frame.core :as re-frame]
             [reagent.core :as reagent :refer [atom]]
             [re-frame-pomofront.session :refer [POST-un-authed]]))

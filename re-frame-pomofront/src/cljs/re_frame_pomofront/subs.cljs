@@ -31,3 +31,8 @@
  :user-data
  (fn [db _]
    (reaction (:user-data @db))))
+
+(re-frame/register-sub
+  :categories
+  (fn [db _]
+    (reaction (get-in @db [:user-data :categories]))))

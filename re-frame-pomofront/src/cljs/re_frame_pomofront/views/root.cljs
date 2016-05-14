@@ -1,9 +1,9 @@
-(ns re-frame-pomofront.views
+(ns re-frame-pomofront.views.root
     (:require [re-frame.core :as re-frame]
-              [re-frame-pomofront.user-bar :refer [user-bar]]
+              [re-frame-pomofront.views.user-bar :refer [user-bar]]
               [re-frame-pomofront.session :refer [POST-un-authed]]
               [reagent.core :as reagent :refer [atom]]
-              [re-frame-pomofront.pomodoro :refer [pomodoro]]))
+              [re-frame-pomofront.views.pomodoro :refer [pomodoro]]))
 
 ;; convenience
 (defn text-input [data-atom]
