@@ -36,3 +36,8 @@
   :categories
   (fn [db _]
     (reaction (get-in @db [:user-data :categories]))))
+
+(re-frame/register-sub
+  :tasks
+  (fn [db _]
+    (reaction (get-in @db [:user-data :tasks]))))

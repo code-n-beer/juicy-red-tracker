@@ -48,3 +48,8 @@
   :update-categories
   (fn [db [_ what]]
     (assoc-in db [:user-data :categories] what)))
+
+(re-frame/register-handler
+  :update-tasks
+  (fn [db [_ what]]
+    (assoc-in db [:user-data :tasks] what)))
