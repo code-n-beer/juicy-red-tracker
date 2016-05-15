@@ -4,10 +4,7 @@
             ))
 
 (defn dropdown [items selected]
-  (if (nil? @selected)
-    (reset! selected (:id (first items))))
-  (fn [items selected]
-    [:select {:on-change #(reset! selected (js/parseInt (-> % .-target .-value)))}
-    ; [:select {:on-change #(js/console.log "hhhhh "(-> % .-target .-value))}
-     (for [item items]
-       [:option {:key (item :id) :value (item :id)} (item :name) ])]))
+  (reset! selected (:id (first items)))
+  [:select {:on-change #(reset! selected (js/parseInt (-> % .-target .-value)))}
+   (for [item items]
+     [:option {:key (item :id) :value (item :id)} (item :name) ])])

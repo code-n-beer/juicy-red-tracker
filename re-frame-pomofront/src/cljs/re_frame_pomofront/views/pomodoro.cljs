@@ -23,9 +23,9 @@
   (GET "/api/user/task" nil #(re-frame/dispatch [:update-tasks %]) on-error))
 
 ;; -------------------------- new pomodoros
-(defn start-pomodoro [length task-id]
-  (re-frame/dispatch [:start-pomodoro length task-id]))
-
+(defn start-pomodoro [length task]
+  (js/console.log "task " (to-json task))
+  (re-frame/dispatch [:start-pomodoro length task]))
 
 (defn new-pomodoro []
   (let [length (atom 25)
@@ -34,9 +34,8 @@
         selected-category (atom nil)
         selected-task (atom nil)]
     (fn []
-      (let [category-by-id (fn [x] 
-                             (if (= (x :id) @selected-category) x))
-            tasks (:tasks (some category-by-id @categories))]
+      (let [tasks (:tasks (some #(if (= (% :id) @selected-category) %) @categories))
+            task (some #(if (= (% :id) @selected-task) %) tasks)]
         [:div
          [:h4 "New pomodoro"]
          [:div "Length: " [text-input length] " minutes. "]
@@ -50,7 +49,7 @@
            [:div 
             [:label "Task: "]
             [dropdown tasks selected-task]
-            [:input {:type "button" :value "start" :on-click #(start-pomodoro @length @task-id)}]])]))))
+            [:input {:type "button" :value "start" :on-click #(start-pomodoro @length task)}]])]))))
 
 
 ;; ------------------------- currently running pomodoro 
@@ -58,30 +57,29 @@
   (POST (str "/api/user/task/" task-id "/pomodoro") {:minutes length :success true} #(get-user) on-error)
   (re-frame/dispatch [:stop-pomodoro]))
 
-(defn counter [timer-atom length started]
-  (let [now (.getTime (js/Date.))
-        length-num (js/parseInt length)
-        length-milliseconds (* length-num 60 1000)
-        result-milliseconds (- (+ length-milliseconds started) now)
-        result-seconds-f (/ result-milliseconds 1000)
-        result-seconds (js/Math.floor result-seconds-f)
-        result-seconds-mod (mod result-seconds 60)
-        result-minutes-f (/ result-seconds 60)
-        result-minutes (js/Math.floor result-minutes-f)]
-    (reset! timer-atom (str result-minutes "min " result-seconds-mod "sec left"))))
 
 (defn running-pomodoro [pomo]
-  (let [length (@pomo :length)
-        started (@pomo :started)
-        task-id (@pomo :task-id)
-        timer (atom 0)]
-    (fn []
-      (js/setTimeout #(counter timer length started) 1000)
-      [:div "running! " @timer
-       [:div 
-        [:input {:type "button"
-                 :value "finish"
-                 :on-click #(post-pomodoro task-id length)}]]])))
+  (let [task (@pomo :task)
+        time-left (@pomo :time-left)
+        length (@pomo :length)
+        pomo-name (task :name)
+        task-id (task :id)
+        minutes (time-left :min)
+        seconds (time-left :sec)
+        sum (* minutes seconds)]
+    (if (> 0 sum) (re-frame/dispatch [:pause-pomodoro]))
+    (js/console.log "sum " sum)
+    (js/console.log "sum over " (> 0 sum))
+    (js/console.log "sum under " (< 0 sum))
+    [:div "running " [:strong pomo-name] "! " minutes "min " seconds "sec left" 
+     [:div 
+      [:input {:type "button"
+               :value "finish"
+               :on-click #(post-pomodoro task-id length)}]
+      [:input {:type "button"
+               :value "stop"
+               :on-click #(re-frame/dispatch [:stop-pomodoro])}]
+      ]]))
 
 (defn pomodoro-component []
   (let [pomodoro (re-frame/subscribe [:running-pomodoro])]

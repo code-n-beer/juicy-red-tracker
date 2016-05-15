@@ -23,15 +23,54 @@
            :current-bar :user-detail
            :active-panel :pomodoro-panel)))
 
+
+(defn counter [length started]
+  (let [now (.getTime (js/Date.))
+        length-num (js/parseInt length)
+        length-milliseconds (* length-num 60 1000)
+        result-milliseconds (- (+ length-milliseconds started) now)
+        result-seconds-f (/ result-milliseconds 1000)
+        result-seconds (js/Math.floor result-seconds-f)
+        result-seconds-mod (mod result-seconds 60)
+        result-minutes-f (/ result-seconds 60)
+        result-minutes (js/Math.floor result-minutes-f)]
+    {:min result-minutes :sec result-seconds-mod}))
+
 (re-frame/register-handler
   :start-pomodoro
-  (fn [db [_ length task-id]]
-    (assoc db :running-pomodoro {:length length :task-id task-id :started (.getTime (js/Date.))})))
+  (fn [db [_ length task]]
+    (if (db :running-pomodoro)
+      (js/clearInterval (:timer (db :running-pomodoro))))
+    (let [init-val {:min 999 :sec 0}
+          start (.getTime (js/Date.))
+          timer (js/setInterval (fn [] 
+                                  (let [time-left (counter length start)]
+                                    (re-frame/dispatch [:update-clock time-left])))
+                                1000)]
+      (assoc db :running-pomodoro 
+             {:task task
+              :timer timer
+              :length length
+              :time-left init-val}))))
+
+(re-frame/register-handler
+  :update-clock
+  (fn [db [_ time-remaining]]
+    (assoc-in db [:running-pomodoro :time-left] time-remaining)))
 
 (re-frame/register-handler
   :stop-pomodoro
   (fn [db _]
+    (if (db :running-pomodoro)
+      (js/clearInterval (:timer (db :running-pomodoro))))
     (assoc db :running-pomodoro nil)))
+
+(re-frame/register-handler
+  :pause-pomodoro
+  (fn [db _]
+    (if (db :running-pomodoro)
+      (js/clearInterval (:timer (db :running-pomodoro))))
+    db))
 
 
 (re-frame/register-handler
