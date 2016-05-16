@@ -67,19 +67,14 @@
         minutes (time-left :min)
         seconds (time-left :sec)
         sum (* minutes seconds)]
-    (if (> 0 sum) (re-frame/dispatch [:pause-pomodoro]))
-    (js/console.log "sum " sum)
-    (js/console.log "sum over " (> 0 sum))
-    (js/console.log "sum under " (< 0 sum))
     [:div "running " [:strong pomo-name] "! " minutes "min " seconds "sec left" 
      [:div 
       [:input {:type "button"
                :value "finish"
                :on-click #(post-pomodoro task-id length)}]
       [:input {:type "button"
-               :value "stop"
-               :on-click #(re-frame/dispatch [:stop-pomodoro])}]
-      ]]))
+               :value "cancel"
+               :on-click #(re-frame/dispatch [:stop-pomodoro])}]]]))
 
 (defn pomodoro-component []
   (let [pomodoro (re-frame/subscribe [:running-pomodoro])]

@@ -44,8 +44,16 @@
     (let [init-val {:min 999 :sec 0}
           start (.getTime (js/Date.))
           timer (js/setInterval (fn [] 
-                                  (let [time-left (counter length start)]
-                                    (re-frame/dispatch [:update-clock time-left])))
+                                  (let [time-left (counter length start)
+                                        mins (time-left :min)
+                                        secs (time-left :sec)]
+                                    (if (or
+                                          (= 0 mins secs)
+                                          (> 0 (* mins secs)))
+                                      (do
+                                        (re-frame/dispatch [:update-clock {:min 0 :sec 0}])
+                                        (re-frame/dispatch [:pause-pomodoro]))
+                                      (re-frame/dispatch [:update-clock time-left]))))
                                 1000)]
       (assoc db :running-pomodoro 
              {:task task
