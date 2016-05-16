@@ -41,3 +41,10 @@
   :tasks
   (fn [db _]
     (reaction (get-in @db [:user-data :tasks]))))
+
+(re-frame/register-sub
+  :user-name
+  (fn [db _]
+    (reaction (or
+                (get-in @db [:user-data :email])
+                "user"))))
