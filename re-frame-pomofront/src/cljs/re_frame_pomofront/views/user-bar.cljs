@@ -32,9 +32,10 @@
        [:input {:type "button" :value "Log in!" :on-click #(login-post @email @password)}]])))
 
 (defn logged-in []
-  (let [token (re-frame/subscribe [:token])]
+  (let [token (re-frame/subscribe [:token])
+        user-name (re-frame/subscribe [:user-name])]
     (fn []
-      [:div "Hi user, here's your accesstoken: " @token])))
+      [:div "Hi " @user-name])))
 
 (defmulti bars identity)
 (defmethod bars :login [] [login-form])
