@@ -36,6 +36,8 @@
         result-minutes (js/Math.floor result-minutes-f)]
     {:min result-minutes :sec result-seconds-mod}))
 
+(def notification-sound (new js/Audio "audio/notification.mp3"))
+
 (re-frame/register-handler
   :start-pomodoro
   (fn [db [_ length task]]
@@ -46,12 +48,15 @@
           timer (js/setInterval (fn [] 
                                   (let [time-left (counter length start)
                                         mins (time-left :min)
-                                        secs (time-left :sec)]
+                                        secs (time-left :sec)
+                                        noti-text (str "Finished " (task :name))]
                                     (if (or
                                           (= 0 mins secs)
                                           (> 0 (* mins secs)))
                                       (do
                                         (re-frame/dispatch [:update-clock {:min 0 :sec 0}])
+                                        (.play notification-sound)
+                                        (js/Notification.requestPermission #(if % (new js/Notification noti-text)))
                                         (re-frame/dispatch [:pause-pomodoro]))
                                       (re-frame/dispatch [:update-clock time-left]))))
                                 1000)]

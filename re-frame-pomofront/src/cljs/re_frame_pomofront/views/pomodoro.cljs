@@ -24,7 +24,6 @@
 
 ;; -------------------------- new pomodoros
 (defn start-pomodoro [length task]
-  (js/console.log "task " (to-json task))
   (re-frame/dispatch [:start-pomodoro length task]))
 
 (defn new-pomodoro []
