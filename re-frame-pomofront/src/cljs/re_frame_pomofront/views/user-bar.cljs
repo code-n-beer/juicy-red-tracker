@@ -48,5 +48,6 @@
 (defn user-bar [props]
   (let [current-bar (re-frame/subscribe [:current-bar])]
     (fn []
-      [:div "heyoo, I'm an obnoxious bar that is always visible at the top of the page"
+      [:div
+       [:h1 "Clojodoro"]
        [show-bar @current-bar]])))

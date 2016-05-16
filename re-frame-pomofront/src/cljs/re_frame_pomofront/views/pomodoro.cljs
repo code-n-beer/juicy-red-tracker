@@ -36,20 +36,20 @@
     (fn []
       (let [tasks (:tasks (some #(if (= (% :id) @selected-category) %) @categories))
             task (some #(if (= (% :id) @selected-task) %) tasks)]
-        [:div
-         [:h4 "New pomodoro"]
-         [:div "Length: " [text-input length] " minutes. "]
-         (if (nil? @categories)
-           [:strong "Create a category first"]
+         [:div
+          [:h3 "New pomodoro"]
+          (if (empty? @categories)
+           [:div [:strong "Create a category first"]]
+           [:div "Length: " [text-input length] " minutes. "
            [:div 
             [:label "Category: "]
-            [dropdown @categories selected-category]])
-         (if (empty? tasks)
-           [:strong "Create a task first"]
-           [:div 
-            [:label "Task: "]
-            [dropdown tasks selected-task]
-            [:input {:type "button" :value "start" :on-click #(start-pomodoro @length task)}]])]))))
+            [dropdown @categories selected-category]]
+           (if (empty? tasks)
+             [:strong "Create a task first"]
+             [:div
+              [:label "Task: "]
+              [dropdown tasks selected-task]
+              [:input {:type "button" :value "start" :on-click #(start-pomodoro @length task)}]])])]))))
 
 
 ;; ------------------------- currently running pomodoro 
@@ -80,7 +80,7 @@
   (let [pomodoro (re-frame/subscribe [:running-pomodoro])]
     (fn []
       [:div
-       [:h4 "Running pomodoro"]
+       [:h3 "Running pomodoro"]
        (if (some? @pomodoro)
          [running-pomodoro pomodoro]
          [:div "not running"])])))
@@ -94,7 +94,7 @@
   (let [category-name (atom "")]
     (fn []
       [:div
-       [:h4 "New category"]
+       [:h3 "New category"]
        [:div "Name: " 
         [text-input category-name]]
        [:input {:type "button" :value "create" :on-click #(post-category @category-name)}]])))
@@ -111,15 +111,14 @@
         selected-category (atom nil)]
     (fn []
       [:div
-       [:h4 "New task"]
-       [:div 
-        "Category "
-        (if (not-empty @categories)
-          [dropdown @categories selected-category]
-          [:strong "Create a category first"])
-        " Task name: "
-        [text-input task-name]]
-       [:input {:type "button" :value "create" :on-click #(post-task @task-name @selected-category)}]])))
+       [:h3 "New task"]
+       (if (empty? @categories)
+         [:div [:strong "Create a category first"]]
+         [:div
+          [:div "Category " [dropdown @categories selected-category]]
+          " Task name: "
+          [text-input task-name]
+          [:input {:type "button" :value "create" :on-click #(post-task @task-name @selected-category)}]])])))
 
 
 (defn pomodoro []
