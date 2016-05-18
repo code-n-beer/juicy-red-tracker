@@ -1,7 +1,7 @@
 (ns re-frame-pomofront.views.pomodoro
   (:require [re-frame.core :as re-frame]
             [reagent.core :as reagent :refer [atom]]
-            [re-frame-pomofront.views.users-pomodoros :refer [old-pomodoros]]
+            [re-frame-pomofront.views.users-pomodoros :refer [your-stuff]]
             [re-frame-pomofront.views.dropdown-component :refer [dropdown]]
             [re-frame-pomofront.session :refer [GET POST]]
             ))
@@ -126,4 +126,4 @@
    [pomodoro-component] ;; y u not consistent ;___;
    [new-category]
    [new-task]
-   [old-pomodoros]])
+   [your-stuff]])
