@@ -16,6 +16,7 @@
 (defn text-input [data-atom]
   [:input {:type "text" :value @data-atom :on-change #(reset! data-atom (-> % .-target .-value))}])
 
+;;these should be refactored to handlers, and be called by dispatching
 (defn get-user []
   (GET "/api/user/" nil #(re-frame/dispatch [:set-user %]) on-error))
 

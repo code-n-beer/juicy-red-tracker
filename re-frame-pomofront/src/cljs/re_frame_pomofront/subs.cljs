@@ -2,6 +2,9 @@
     (:require-macros [reagent.ratom :refer [reaction]])
     (:require [re-frame.core :as re-frame]))
 
+(defn to-json [d]
+  (.stringify js/JSON (clj->js d)))
+
 (re-frame/register-sub
  :name
  (fn [db]
@@ -48,3 +51,12 @@
     (reaction (or
                 (get-in @db [:user-data :email])
                 "user"))))
+
+(re-frame/register-sub
+  :task-view
+  (fn [db _]
+    (let [pomodoros (get-in @db [:user-data :pomodoros])
+          grouped-pomos (group-by :task_id pomodoros)
+          tasks (@db :tasks)
+          pomos-with-names (mapv #(assoc % :pomodoros (grouped-pomos (% :id))) tasks)]
+      (reaction (reverse pomos-with-names)))))
