@@ -1,5 +1,6 @@
 (ns re-frame-pomofront.handlers
     (:require [re-frame.core :as re-frame]
+              [re-frame-pomofront.session :refer [GET POST]]
               [re-frame-pomofront.db :as db]))
 
 (defn to-json [d]
@@ -15,10 +16,21 @@
  (fn [db [_ active-panel]]
    (assoc db :active-panel active-panel)))
 
+(re-frame/register-handler
+  :request-user-data
+  (fn [db _]
+    (GET 
+      "/api/user/"
+      nil
+      #(re-frame/dispatch [:set-user %])
+      #(js/console.log (to-json %)))
+    db))
 
 (re-frame/register-handler
   :login-success
   (fn [db [_ token component]]
+    (re-frame/dispatch [:request-user-data])
+    (re-frame/dispatch [:request-tasks])
     (assoc db :token token 
            :current-bar :user-detail
            :active-panel :pomodoro-panel)))
@@ -85,7 +97,6 @@
       (js/clearInterval (:timer (db :running-pomodoro))))
     db))
 
-
 (re-frame/register-handler
   :set-user
   (fn [db [_ response]]
@@ -103,5 +114,16 @@
 
 (re-frame/register-handler
   :update-tasks
-  (fn [db [_ what]]
-    (assoc-in db [:user-data :tasks] what)))
+  (fn [db [_ tasks]]
+    (js/console.log "set task")
+    (assoc db :tasks tasks)))
+
+(re-frame/register-handler
+  :request-tasks
+  (fn [db _]
+    (GET
+      "/api/user/task"
+      {:flatten 1}
+      #(re-frame/dispatch [:update-tasks %])
+      #(js/console.log (to-json %)))
+    db))
