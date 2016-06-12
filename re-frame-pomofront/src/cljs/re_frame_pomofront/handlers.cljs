@@ -115,7 +115,6 @@
 (re-frame/register-handler
   :update-tasks
   (fn [db [_ tasks]]
-    (js/console.log "set task")
     (assoc db :tasks tasks)))
 
 (re-frame/register-handler

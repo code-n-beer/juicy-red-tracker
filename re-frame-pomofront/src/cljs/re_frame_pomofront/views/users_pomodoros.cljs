@@ -23,25 +23,19 @@
 
 (defn task-list [tasks]
   [:div
-  (for [task tasks]
-    (let [id (task :id)
-          task-name (task :name)]
-      [:div {:key id}
-       [:h4 task-name]
-       [task-pomodoros (task :pomodoros)]]))])
+   (for [task tasks]
+     (let [id (task :id)
+           task-name (task :name)]
+       [:div {:key id}
+        [:h4 task-name]
+        [task-pomodoros (task :pomodoros)]]))])
 
-(defn pomo-list [items]
+(defn task-grouped-pomodoros []
   (let [tasks (re-frame/subscribe [:task-view])]
-    (fn [items]
-       [task-list @tasks])))
+    (fn []
+      [task-list @tasks])))
 
 (defn your-stuff []
-  (let [user-data (re-frame/subscribe [:user-data])]
-    (fn []
-      [:div 
-       [:h2 "Your pomodoros"]
-       (if (empty? @user-data)
-         [:div "Loading"]
-         [:div 
-          [pomo-list (@user-data :pomodoros)]])])))
-
+  [:div 
+   [:h2 "Your pomodoros"]
+   [task-grouped-pomodoros]])

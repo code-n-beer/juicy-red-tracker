@@ -55,8 +55,8 @@
 (re-frame/register-sub
   :task-view
   (fn [db _]
-    (let [pomodoros (get-in @db [:user-data :pomodoros])
-          grouped-pomos (group-by :task_id pomodoros)
-          tasks (@db :tasks)
-          pomos-with-names (mapv #(assoc % :pomodoros (grouped-pomos (% :id))) tasks)]
-      (reaction (reverse pomos-with-names)))))
+    (let [pomodoros (reaction (get-in @db [:user-data :pomodoros]))
+          grouped-pomos (reaction (group-by :task_id @pomodoros))
+          tasks (reaction (@db :tasks))
+          pomos-with-names (reaction (mapv #(assoc % :pomodoros (@grouped-pomos (% :id))) @tasks))]
+      (reaction (reverse @pomos-with-names)))))
