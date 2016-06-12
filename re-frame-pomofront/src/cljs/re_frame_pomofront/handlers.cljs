@@ -55,13 +55,16 @@
   (fn [db [_ length task]]
     (if (db :running-pomodoro)
       (js/clearInterval (:timer (db :running-pomodoro))))
-    (let [init-val {:min 999 :sec 0}
-          start (.getTime (js/Date.))
+    (let [start (.getTime (js/Date.))
+          time-left (counter length start)
+          mins (time-left :min)
+          secs (time-left :sec)
+          init-val {:min mins :sec secs}
           timer (js/setInterval (fn [] 
-                                  (let [time-left (counter length start)
+                                  (let [noti-text (str "Finished " (task :name))
+                                        time-left (counter length start)
                                         mins (time-left :min)
-                                        secs (time-left :sec)
-                                        noti-text (str "Finished " (task :name))]
+                                        secs (time-left :sec)]
                                     (if (or
                                           (= 0 mins secs)
                                           (> 0 (* mins secs)))
