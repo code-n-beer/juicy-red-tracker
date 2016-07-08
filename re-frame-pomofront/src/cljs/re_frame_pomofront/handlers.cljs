@@ -50,6 +50,22 @@
 
 (def notification-sound (new js/Audio "audio/notification.mp3"))
 
+(defn clock-updater [length start task]
+  (fn []
+    (let [noti-text (str "Finished " (task :name))
+          time-left (counter length start)
+          mins (time-left :min)
+          secs (time-left :sec)]
+      (if (or
+            (= 0 mins secs)
+            (> 0 (* mins secs)))
+        (do
+          (re-frame/dispatch [:update-clock {:min 0 :sec 0}])
+          (.play notification-sound)
+          (js/Notification.requestPermission #(if % (new js/Notification noti-text)))
+          (re-frame/dispatch [:pause-pomodoro]))
+        (re-frame/dispatch [:update-clock time-left])))))
+
 (re-frame/register-handler
   :start-pomodoro
   (fn [db [_ length task]]
@@ -60,26 +76,19 @@
           mins (time-left :min)
           secs (time-left :sec)
           init-val {:min mins :sec secs}
-          timer (js/setInterval (fn [] 
-                                  (let [noti-text (str "Finished " (task :name))
-                                        time-left (counter length start)
-                                        mins (time-left :min)
-                                        secs (time-left :sec)]
-                                    (if (or
-                                          (= 0 mins secs)
-                                          (> 0 (* mins secs)))
-                                      (do
-                                        (re-frame/dispatch [:update-clock {:min 0 :sec 0}])
-                                        (.play notification-sound)
-                                        (js/Notification.requestPermission #(if % (new js/Notification noti-text)))
-                                        (re-frame/dispatch [:pause-pomodoro]))
-                                      (re-frame/dispatch [:update-clock time-left]))))
-                                1000)]
+          timer (js/setInterval (clock-updater length start task) 1000)]
       (assoc db :running-pomodoro 
              {:task task
               :timer timer
               :length length
               :time-left init-val}))))
+
+(re-frame/register-handler
+  :pause-pomodoro
+  (fn [db _]
+    (if (db :running-pomodoro)
+      (js/clearInterval (:timer (db :running-pomodoro))))
+    db))
 
 (re-frame/register-handler
   :update-clock
@@ -92,13 +101,6 @@
     (if (db :running-pomodoro)
       (js/clearInterval (:timer (db :running-pomodoro))))
     (assoc db :running-pomodoro nil)))
-
-(re-frame/register-handler
-  :pause-pomodoro
-  (fn [db _]
-    (if (db :running-pomodoro)
-      (js/clearInterval (:timer (db :running-pomodoro))))
-    db))
 
 (re-frame/register-handler
   :set-user
