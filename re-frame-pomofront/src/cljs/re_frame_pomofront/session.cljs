@@ -3,7 +3,7 @@
             [reagent.core :as reagent :refer [atom]]
             [ajax.core :as ajax]))
 
-(def api-url "http://localhost:3000")
+(def api-url (str "http://" js/window.location.hostname ":3001"))
 
 (defn to-json [d]
   (.stringify js/JSON (clj->js d)))

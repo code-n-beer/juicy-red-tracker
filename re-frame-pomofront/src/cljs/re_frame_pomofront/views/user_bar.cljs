@@ -2,7 +2,6 @@
   (:require [re-frame.core :as re-frame]
             [reagent.core :as reagent :refer [atom]]
             [re-frame-pomofront.session :refer [POST-un-authed]]))
-            ;[ajax.core :refer [GET POST]]))
 
 (def host (str js/window.location.host))
 
