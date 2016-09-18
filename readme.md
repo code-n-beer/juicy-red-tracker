@@ -19,8 +19,11 @@ Assuming `lein` and clojure are installed. (They only take a minute)
 - browse to http://localhost:3449/
 - for registering to work, the back-end must be set up.
 
+Front-end color palette
+---
+http://paletton.com/#uid=53p0g0kllqf1UEu3sn0U0sxO7fS
 
-Optional fields marked as OPTIONAL.
+Backend documentation -- optional fields marked as OPTIONAL.
 ---
 New user: POST /api/user
 
