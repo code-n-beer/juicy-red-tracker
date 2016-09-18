@@ -36,7 +36,7 @@
     (fn []
       (let [tasks (:tasks (some #(if (= (% :id) @selected-category) %) @categories))
             task (some #(if (= (% :id) @selected-task) %) tasks)]
-         [:div
+         [:div.two-level-indent
           [:h3 "New pomodoro"]
           (if (empty? @categories)
            [:div [:strong "Create a category first"]]
@@ -79,7 +79,7 @@
 (defn pomodoro-component []
   (let [pomodoro (re-frame/subscribe [:running-pomodoro])]
     (fn []
-      [:div
+      [:div.two-level-indent
        [:h3 "Running pomodoro"]
        (if (some? @pomodoro)
          [running-pomodoro pomodoro]
@@ -93,7 +93,7 @@
 (defn new-category []
   (let [category-name (atom "")]
     (fn []
-      [:div
+      [:div.two-level-indent
        [:h3 "New category"]
        [:div "Name: "
         [text-input category-name]]
@@ -110,7 +110,7 @@
         categories (re-frame/subscribe [:categories])
         selected-category (atom nil)]
     (fn []
-      [:div
+      [:div.two-level-indent
        [:h3 "New task"]
        (if (empty? @categories)
          [:div [:strong "Create a category first"]]
@@ -123,8 +123,9 @@
 
 (defn pomodoro []
   [:div
-   [new-pomodoro]
-   [pomodoro-component]
-   [new-category]
-   [new-task]
+   [:div.new-pomodoro-creation
+    [new-pomodoro]
+    [pomodoro-component]
+    [new-category]
+    [new-task]]
    [your-stuff]])
