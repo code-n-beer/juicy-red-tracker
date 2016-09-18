@@ -36,6 +36,6 @@
       [task-list @tasks])))
 
 (defn your-stuff []
-  [:div 
+  [:div
    [:h2 "Your pomodoros"]
    [task-grouped-pomodoros]])
