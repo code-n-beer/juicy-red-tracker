@@ -52,6 +52,11 @@
                 (get-in @db [:user-data :email])
                 "user"))))
 
+(defn get-date[date-str]
+  (let [js-date (new js/Date date-str)
+        d-m-y (str (.getDay js-date) (.getMonth js-date) (.getFullYear js-date))]
+    d-m-y))
+
 (re-frame/register-sub
   :task-view
   (fn [db _]
@@ -60,3 +65,4 @@
           tasks (reaction (@db :tasks))
           pomos-with-names (reaction (mapv #(assoc % :pomodoros (@grouped-pomos (% :id))) @tasks))]
       (reaction (reverse @pomos-with-names)))))
+

@@ -5,13 +5,16 @@ var uuid = require('node-uuid');
 var app = express();
 var url = require('url');
 var pgServer = url.parse(process.env.DATABASE_URL);
+
+let user = pgServer.auth.split(':')[0]
+let password = pgServer.auth.split(':')[1]
 var knex = require('knex')({
   client: 'pg',
   connection: {
 	  host: pgServer.hostname,
 	  port: pgServer.port,
-	  user: pgServer.auth.split(':')[0],
-	  password: pgServer.auth.split(':')[1],
+	  user: user,
+	  password: password,
 	  database: pgServer.path.substring(1),
 	  ssl: true
   },

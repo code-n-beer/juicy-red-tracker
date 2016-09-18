@@ -19,7 +19,7 @@
 (re-frame/register-handler
   :request-user-data
   (fn [db _]
-    (GET 
+    (GET
       "/api/user/"
       nil
       #(re-frame/dispatch [:set-user %])
@@ -31,7 +31,7 @@
   (fn [db [_ token component]]
     (re-frame/dispatch [:request-user-data])
     (re-frame/dispatch [:request-tasks])
-    (assoc db :token token 
+    (assoc db :token token
            :current-bar :user-detail
            :active-panel :pomodoro-panel)))
 
@@ -77,7 +77,7 @@
           secs (time-left :sec)
           init-val {:min mins :sec secs}
           timer (js/setInterval (clock-updater length start task) 1000)]
-      (assoc db :running-pomodoro 
+      (assoc db :running-pomodoro
              {:task task
               :timer timer
               :length length

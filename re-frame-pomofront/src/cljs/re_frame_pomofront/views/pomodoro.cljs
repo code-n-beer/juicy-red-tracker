@@ -6,7 +6,7 @@
             [re-frame-pomofront.session :refer [GET POST]]
             ))
 
-;; -------------------------- convenience funcs 
+;; -------------------------- convenience funcs
 (defn to-json [d]
   (.stringify js/JSON (clj->js d)))
 
@@ -36,12 +36,12 @@
     (fn []
       (let [tasks (:tasks (some #(if (= (% :id) @selected-category) %) @categories))
             task (some #(if (= (% :id) @selected-task) %) tasks)]
-         [:div
+         [:div.two-level-indent
           [:h3 "New pomodoro"]
           (if (empty? @categories)
            [:div [:strong "Create a category first"]]
            [:div "Length: " [text-input length] " minutes. "
-           [:div 
+           [:div
             [:label "Category: "]
             [dropdown @categories selected-category]]
            (if (empty? tasks)
@@ -52,7 +52,7 @@
               [:input {:type "button" :value "start" :on-click #(start-pomodoro @length task)}]])])]))))
 
 
-;; ------------------------- currently running pomodoro 
+;; ------------------------- currently running pomodoro
 (defn post-pomodoro [task-id length]
   (POST (str "/api/user/task/" task-id "/pomodoro") {:minutes length :success true} #(get-user) on-error)
   (re-frame/dispatch [:stop-pomodoro]))
@@ -67,8 +67,8 @@
         minutes (time-left :min)
         seconds (time-left :sec)
         sum (* minutes seconds)]
-    [:div "running " [:strong pomo-name] "! " minutes "min " seconds "sec left" 
-     [:div 
+    [:div "running " [:strong pomo-name] "! " minutes "min " seconds "sec left"
+     [:div
       [:input {:type "button"
                :value "finish"
                :on-click #(post-pomodoro task-id length)}]
@@ -79,28 +79,28 @@
 (defn pomodoro-component []
   (let [pomodoro (re-frame/subscribe [:running-pomodoro])]
     (fn []
-      [:div
+      [:div.two-level-indent
        [:h3 "Running pomodoro"]
        (if (some? @pomodoro)
          [running-pomodoro pomodoro]
          [:div "not running"])])))
 
 
-;; -------------------------- categories 
+;; -------------------------- categories
 (defn post-category [cat-name]
   (POST "/api/user/category/" {:name cat-name} #(get-user) on-error))
 
 (defn new-category []
   (let [category-name (atom "")]
     (fn []
-      [:div
+      [:div.two-level-indent
        [:h3 "New category"]
-       [:div "Name: " 
+       [:div "Name: "
         [text-input category-name]]
        [:input {:type "button" :value "create" :on-click #(post-category @category-name)}]])))
 
 
-;; ------------------------- tasks 
+;; ------------------------- tasks
 (defn post-task [task-name cat-id]
   (POST (str "/api/user/category/" cat-id "/task") {:name task-name} #(get-user) on-error))
 
@@ -110,7 +110,7 @@
         categories (re-frame/subscribe [:categories])
         selected-category (atom nil)]
     (fn []
-      [:div
+      [:div.two-level-indent
        [:h3 "New task"]
        (if (empty? @categories)
          [:div [:strong "Create a category first"]]
@@ -122,9 +122,10 @@
 
 
 (defn pomodoro []
-  [:div 
-   [new-pomodoro]
-   [pomodoro-component] ;; y u not consistent ;___;
-   [new-category]
-   [new-task]
+  [:div
+   [:div.new-pomodoro-creation
+    [new-pomodoro]
+    [pomodoro-component]
+    [new-category]
+    [new-task]]
    [your-stuff]])
