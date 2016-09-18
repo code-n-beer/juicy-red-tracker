@@ -19,7 +19,7 @@
 (re-frame/register-handler
   :request-user-data
   (fn [db _]
-    (GET 
+    (GET
       "/api/user/"
       nil
       #(re-frame/dispatch [:set-user %])

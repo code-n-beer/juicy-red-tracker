@@ -10,7 +10,7 @@ body {
   text-transform: uppercase;
 }
 
-.task{
+.task {
   background-color: #013C4F;
   padding: 20px;
   margin: 0px 40px 0px 40px;
@@ -25,4 +25,15 @@ body {
   background-color: #016B8E;
   padding: 20px 20px 20px 20px;
   margin: 0px 40px 20px 20px;
+}
 
+.new-pomodoro-creation {
+  background-color: #013C4F;
+  padding: 20px;
+}
+
+.two-level-indent {
+  background-color: #016B8E;
+  padding: 20px;
+  margin-bottom: 20px;
+}
