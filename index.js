@@ -6,8 +6,8 @@ var app = express();
 var url = require('url');
 var pgServer = url.parse(process.env.DATABASE_URL);
 
-let user = pgServer.auth.split(':')[0]
-let password = pgServer.auth.split(':')[1]
+var user = pgServer.auth.split(':')[0]
+var password = pgServer.auth.split(':')[1]
 var knex = require('knex')({
   client: 'pg',
   connection: {
