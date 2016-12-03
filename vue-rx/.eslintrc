@@ -16,6 +16,7 @@
     "sourceType": "module"
   },
   "rules": {
+    "no-console": 'warn',
     "curly": [2, "multi-line"],
     "no-trailing-spaces": 1,
     "quotes": [1, "single", "avoid-escape"],

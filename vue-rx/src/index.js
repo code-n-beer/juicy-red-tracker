@@ -3,7 +3,6 @@ import Rx from 'rxjs/Rx'
 import VueRx from 'vue-rx'
 import Hello from './app/Hello.vue'
 
-import './index.scss'
 import VueRouter from 'vue-router'
 Vue.use(VueRouter, VueRx, Rx)
 

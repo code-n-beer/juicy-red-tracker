@@ -1,4 +1,4 @@
-const API = 'localhost:3000/api'
+const API = 'http://localhost:3000/api'
 function POST(endpoint, data) {
   return fetch(API + endpoint, {
     method: 'post',
@@ -8,7 +8,7 @@ function POST(endpoint, data) {
       'Content-Type': 'application/json',
       'accesstoken' : localStorage.getItem('accesstoken')
     })
-  })
+  }).then(res => res.json())
 }
 
 function GET(endpoint) {
@@ -17,7 +17,7 @@ function GET(endpoint) {
       'Content-Type': 'application/json',
       'accesstoken' : localStorage.getItem('accesstoken')
     })
-  })
+  }).then(res => res.json())
 }
 
 export default {

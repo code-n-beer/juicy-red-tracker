@@ -1,10 +1,7 @@
-import rest from './auth.js'
-const login = (email, password) => {
-  rest.POST('/api/session', {email, password})
+import rest from './rest.js'
+export const login = (email, password) => {
+  return rest.POST('/session', {email, password})
 }
-const logout = () => {
+export const logout = () => {
   // NYI
-}
-export default {
-  login, logout
 }

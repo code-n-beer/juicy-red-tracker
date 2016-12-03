@@ -12,7 +12,7 @@
     name: 'Hello',
     data() {
       return {
-        hello: 'ses!'
+        hello: 'Pomodoro'
       };
     },
     components: {
