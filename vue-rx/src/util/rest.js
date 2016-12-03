@@ -1,4 +1,4 @@
-const API = 'http://localhost:3000/api'
+const API = 'http://localhost:3002/api'
 function POST(endpoint, data) {
   return fetch(API + endpoint, {
     method: 'post',
