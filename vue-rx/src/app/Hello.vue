@@ -1,14 +1,22 @@
 <template>
-  <h1>{{ hello }}</h1>
+  <div>
+    <h1>{{ hello }}</h1>
+    <user></user>
+  </div>
+
 </template>
 
 <script>
-export default {
-  name: 'Hello',
-  data() {
-    return {
-      hello: 'Hello World!'
-    };
-  }
-};
+  import User from './User.vue'
+  export default {
+    name: 'Hello',
+    data() {
+      return {
+        hello: 'ses!'
+      };
+    },
+    components: {
+      User
+    }
+  };
 </script>
