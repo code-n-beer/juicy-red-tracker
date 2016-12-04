@@ -2,7 +2,7 @@
   <div>
     <h1>{{ hello }}</h1>
     <user></user>
-    <pomodoro/>
+    <pomodoro></pomodoro>
   </div>
 
 </template>
