@@ -16,7 +16,7 @@
   import Vue from 'vue'
   import Rx from 'rxjs/Rx'
   import VueRx from 'vue-rx'
-// AFAIK Vue.use rx has to be done in all components that want to use Rxjs..
+// AFAIK Vue.use(rx) has to be done in all components that want to use Rxjs..
   Vue.use(VueRx, Rx)
 
   import {login} from '../util/auth'
