@@ -6,12 +6,6 @@
     <button v-show="running" name="finish"> Finish </button>
     <button v-show="!running"  name="start"> Start </button>
     <p v-show="running"> runnink {{pomodoroTimer}} plop </p>
-    <ul name="pomodoros">
-      <li v-for="pomo in pomos">
-        {{pomo.length}} {{pomo.name}}
-      </li>
-    </ul>
-
   </div>
 
 </template>

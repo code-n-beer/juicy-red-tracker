@@ -13,12 +13,6 @@
 </template>
 
 <script>
-  import Vue from 'vue'
-  import Rx from 'rxjs/Rx'
-  import VueRx from 'vue-rx'
-// AFAIK Vue.use(rx) has to be done in all components that want to use Rxjs..
-  Vue.use(VueRx, Rx)
-
   import {login, userData$} from '../util/auth'
   export default {
     name: 'User',
