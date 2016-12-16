@@ -1,10 +1,10 @@
 <template>
   <div class="login">
-    <div v-if="loggedIn" class="logged-in">
-      <p> Logged in! </p>
-      <p> {{ loggedIn }} </p>
+    <div v-if="userData" class="logged-in">
+      <p v-if="userData.token"> Logged in! </p>
     </div>
-    <div v-else class="not-logged-in">
+    <p v-if="loginResponse && loginResponse.error"> {{ loginResponse.error }} </p>
+    <div v-if="!userData || !userData.token" class="not-logged-in">
       <input type="text" placeholder="email" name="email" v-model="email"/>
       <input type="text" placeholder="password will be sent as plain text" name="password" v-model="password"/>
       <button name="login"> Login </button>
@@ -19,7 +19,7 @@
 // AFAIK Vue.use(rx) has to be done in all components that want to use Rxjs..
   Vue.use(VueRx, Rx)
 
-  import {login} from '../util/auth'
+  import {login, userData$} from '../util/auth'
   export default {
     name: 'User',
     data() {
@@ -36,7 +36,8 @@
             .withLatestFrom(creds, (_, [email, pass]) => [email, pass])
             .switchMap(([email, pass]) => login(email, pass))
       return {
-        loggedIn: clickedyClack
+        loginResponse: clickedyClack,
+        userData: userData$
       }
     }
   }
