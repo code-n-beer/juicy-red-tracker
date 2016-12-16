@@ -2,11 +2,10 @@
   <div>
     <input class="pomo-length" v-model="pomodoroLength" placeholder="Pomodoro length in minutes">
     <input class="pomo-name" v-model="pomodoroName" placeholder="Pomodoro task name">
-    <button v-if="running" name="stop"> Stop </button>
-    <button v-if="running" name="finish"> Finish </button>
-    <button v-if="!running" name="start"> Start </button>
-    <!-- <button v-else name="start"> Start </button>-->
-    <p v-if="running"> running {{pomodoroTimer}} plop </p>
+    <button v-show="running" name="stop"> Stop </button>
+    <button v-show="running" name="finish"> Finish </button>
+    <button v-show="!running"  name="start"> Start </button>
+    <p v-show="running"> runnink {{pomodoroTimer}} plop </p>
     <ul name="pomodoros">
       <li v-for="pomo in pomos">
         {{pomo.length}} {{pomo.name}}
