@@ -1,9 +1,9 @@
 <template>
   <div class="login">
-    <div v-if="userData" class="logged-in">
-      <p v-if="userData.token"> Logged in! </p>
+    <div v-if="userData && !userData.error" class="logged-in">
+      <p v-show="userData.token"> Logged in! </p>
     </div>
-    <p v-if="loginResponse && loginResponse.error"> {{ loginResponse.error }} </p>
+    <p v-if="loginData && loginData.error"> {{ loginData.error }} </p>
     <div v-if="!userData || !userData.token" class="not-logged-in">
       <input type="text" placeholder="email" name="email" v-model="email"/>
       <input type="text" placeholder="password will be sent as plain text" name="password" v-model="password"/>
@@ -27,24 +27,28 @@
       const email = this.$watchAsObservable('email').pluck('newValue')
       const password = this.$watchAsObservable('password').pluck('newValue')
       const creds = email.combineLatest(password)
-      const clickedyClack = this.$fromDOMEvent('button[name=login]', 'click')
-                                .withLatestFrom(creds, (_, [email, pass]) => [email, pass])
-                                .switchMap(([email, pass]) => {
-                                  login$.next({email, pass})
-                                  return login$
-                                })
-                                .flatMap(result => result)
-      console.log(clickedyClack)
+      const loginRes = this.$fromDOMEvent('button[name=login]', 'click')
+                           .do(_ => console.log('1'))
+                           .withLatestFrom(creds, (_, [email, pass]) => [email, pass])
+                           .do(_ => console.log('2'))
+                           .switchMap(([email, password]) => {
+                             console.log('loginninin')
+                             login$.next({email, password})
+                             return [email, password]
+                           })
+                           .do(_ => console.log('3'))
+      //.flatMap(result => {console.log('flatmap'); return result})
       return {
-        loginResponse: clickedyClack,
-        userData: userData$
+        loginResponse: loginRes,
+        userData: userData$,
+        loginData: login$.do(_ => console.log('derp'))
       }
     }
   }
 </script>
 
 <style lang="sass">
-  .login {
-    background-color: white;
-  }
+ .login {
+   background-color: white;
+ }
 </style>
