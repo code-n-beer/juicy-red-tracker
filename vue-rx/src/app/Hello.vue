@@ -1,8 +1,9 @@
 <template>
   <div>
     <h1>{{ hello }}</h1>
-    <user></user>
-    <pomodoro></pomodoro>
+    <user> </user>
+    <pomodoro> </pomodoro>
+    <PomodoroList> </PomodoroList>
   </div>
 
 </template>
@@ -15,6 +16,7 @@
 
   import User from './User.vue'
   import Pomodoro from './Pomodoro.vue'
+  import PomodoroList from './PomodoroList.vue'
   export default {
     name: 'Hello',
     data() {
@@ -23,7 +25,7 @@
       };
     },
     components: {
-      User, Pomodoro
+      User, Pomodoro, PomodoroList
     }
   };
 </script>

@@ -13,7 +13,8 @@
 </template>
 
 <script>
-  import {login, userData$} from '../util/auth'
+  import Rx from 'rxjs/Rx'
+  import {login$, userData$} from '../util/auth'
   export default {
     name: 'User',
     data() {
@@ -27,8 +28,13 @@
       const password = this.$watchAsObservable('password').pluck('newValue')
       const creds = email.combineLatest(password)
       const clickedyClack = this.$fromDOMEvent('button[name=login]', 'click')
-            .withLatestFrom(creds, (_, [email, pass]) => [email, pass])
-            .switchMap(([email, pass]) => login(email, pass))
+                                .withLatestFrom(creds, (_, [email, pass]) => [email, pass])
+                                .switchMap(([email, pass]) => {
+                                  login$.next({email, pass})
+                                  return login$
+                                })
+                                .flatMap(result => result)
+      console.log(clickedyClack)
       return {
         loginResponse: clickedyClack,
         userData: userData$
