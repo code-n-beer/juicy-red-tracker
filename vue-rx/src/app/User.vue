@@ -32,11 +32,8 @@
                          .do(_ => logout())
 
      const email = this.$watchAsObservable('email').pluck('newValue')
-     //.do(_ => console.log('mail'))
      const password = this.$watchAsObservable('password').pluck('newValue')
-     //.do(_ => console.log('pass'))
      const creds = email.combineLatest(password)
-     //.do(_ => console.log('creds'))
      const loginRes = this.$fromDOMEvent('button[name=login]', 'click')
                           .do(_ => console.log('1'))
                           .withLatestFrom(creds, (_, [email, pass]) => [email, pass])
@@ -44,10 +41,8 @@
                           .switchMap(([email, password]) => login({email, password}))
                           .do(_ => console.log('3'))
                           .do(x => console.log(x))
-     //.flatMap(result => {console.log('flatmap'); return result})
-
      return {
-       userData: state$, //.do(x => console.log(x)),
+       userData: state$,
        loginData: loginRes,
        logout$
      }
