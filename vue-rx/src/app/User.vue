@@ -1,7 +1,7 @@
 <template>
   <div class="login">
     <!-- https://jsfiddle.net/fddxe9zd/ -->
-    <div v-if="userData && !userData.error" class="logged-in">
+    <div v-if="userData && userData.token" class="logged-in">
       <p v-show="userData.token"> Logged in! </p>
       <button v-show="userData.token" name="logout"> Logout </button>
     </div>
