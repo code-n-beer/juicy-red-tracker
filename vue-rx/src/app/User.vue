@@ -1,5 +1,6 @@
 <template>
   <div class="login">
+    <!-- https://jsfiddle.net/fddxe9zd/ -->
     <div v-if="userData && !userData.error" class="logged-in">
       <p v-show="userData.token"> Logged in! </p>
       <button v-show="userData.token" name="logout"> Logout </button>
@@ -15,7 +16,7 @@
 
 <script>
   import Rx from 'rxjs/Rx'
-  import {login, logout, state} from '../util/auth'
+  import {login, logout, state$} from '../util/auth'
   export default {
     name: 'User',
     data() {
@@ -41,11 +42,11 @@
                            .do(_ => console.log('2'))
                            .switchMap(([email, password]) => login({email, password}))
                            .do(_ => console.log('3'))
+                           .do(x => console.log(x))
+                           //.flatMap(result => {console.log('flatmap'); return result})
 
-      //.flatMap(result => {console.log('flatmap'); return result})
       return {
-        userData: state.userData$
-                           .do(x => console.log(x)),
+        userData: state$, //.do(x => console.log(x)),
         loginData: loginRes,
         logout$
       }
