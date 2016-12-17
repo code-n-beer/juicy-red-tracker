@@ -13,11 +13,10 @@ Example back-end setup
 
 Example front-end setup
 ---
-Assuming `lein` and clojure are installed. (They only take a minute)
-- `cd pomofront`
-- lein figwheel
-- browse to http://localhost:3449/
-- for registering to work, the back-end must be set up.
+- cd vue-rx
+- npm install
+(- install gulp if you don't have it)
+- gulp serve
 
 Front-end color palette
 ---
