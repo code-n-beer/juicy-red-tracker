@@ -1,17 +1,7 @@
 import Rx from 'rxjs/Rx'
 
 import rest from './rest.js'
-
-const stateObserver$ = new Rx.Subject()
-      .scan((stateObservable, newObservable) => Rx.Observable.merge(stateObservable, newObservable))
-
-export const newStateObservable = (observable) => {
-  const sub = new Rx.Subject()
-  observable.subscribe(sub)
-  stateObserver$
-    .next(sub
-          .map((obj) => state => Object.assign({}, state, obj)))
-}
+import {newStateObservable} from './state.js'
 
 // If access token state changes, update stream
 const storage$ = Rx.Observable.fromEvent(window, 'storage')
@@ -44,18 +34,6 @@ export const login = (creds) => {
   newStateObservable(login$)
   return login$
 }
-
-export const state$ = new Rx.BehaviorSubject({token: localStorage.getItem('accesstoken')})
-
-const reducer = stateObserver$
-      .do(_ => console.log('state observer 1'))
-      .do(x => console.log(x))
-      .switchMap(x => x)
-      .do(_ => console.log('state observer 2'))
-      .do(x => console.log(x))
-      .scan((state, fn) => fn(state), {})
-
-reducer.subscribe(state$)
 
 export const logout = () => {
   window.localStorage.removeItem('accesstoken')
