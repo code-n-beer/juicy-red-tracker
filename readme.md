@@ -13,10 +13,10 @@ Example back-end setup
 
 Example front-end setup
 ---
-- cd vue-rx
-- npm install
-(- install gulp if you don't have it)
-- gulp serve
+- `cd vue-rx`
+- `npm install`
+( install gulp if you don't already have it)
+- `gulp serve`
 
 Front-end color palette
 ---
