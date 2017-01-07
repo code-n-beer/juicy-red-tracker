@@ -21,11 +21,7 @@ export const state$ = new Rx.BehaviorSubject({})
 
 const reducer = stateObserver$
       .switchMap(x => x)
-      .scan((state, fn) => {
-        return fn(state)
-      }, {})
-      .distinctUntilChanged((a, b) => {
-        return isEqual(a, b)
-      })
+      .scan((state, fn) => fn(state), {})
+      .distinctUntilChanged(isEqual)
 
 reducer.subscribe(state$)
