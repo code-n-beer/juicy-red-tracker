@@ -1,16 +1,16 @@
 import Rx from 'rxjs/Rx'
 
-import rest from './rest.js'
+import {POST} from './rest.js'
 import {newStateObservable} from './state.js'
 
-// If access token state changes, update stream
+// If window localstorage changes, update access token
 const storage$ = Rx.Observable.fromEvent(window, 'storage')
       .map(_ => ({token: localStorage.getItem('accesstoken')}))
 
 newStateObservable(storage$)
 
 export const login = (creds) => {
-  const login$ = Rx.Observable.fromPromise(rest.POST('/session', creds))
+  const login$ = Rx.Observable.fromPromise(POST('/session', creds))
         .map(res => {
           if (!res.token) {
             throw new Error(res.error)
@@ -20,8 +20,7 @@ export const login = (creds) => {
         })
         .catch(e => {
           return Rx.Observable.of({error: e.message})
-        })
-        .share()
+        }).share()
   newStateObservable(login$)
   return login$
 }
