@@ -23,5 +23,6 @@ const reducer = stateObserver$
       .switchMap(x => x)
       .scan((state, fn) => fn(state), {})
       .distinctUntilChanged(isEqual)
+      .do(e => console.log(e))
 
 reducer.subscribe(state$)

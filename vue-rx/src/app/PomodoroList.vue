@@ -9,7 +9,6 @@
         </div>
       </li>
     </ul>
-    <div> {{JSON.stringify(userData, null, 2)}} </div>
   </div>
 
   </template>
@@ -23,7 +22,6 @@
             .filter(e => e.tasks)
             .map(state => state.tasks
                  .map(task => Object.assign(task, {'pomos': state.pomodoros.filter(p => p.task_id === task.id && p.minutes !== 0)})))
-            .do(p => console.log(p))
       return {
         userData: state$,
         tasksWithPomos

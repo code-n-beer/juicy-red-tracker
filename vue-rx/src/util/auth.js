@@ -20,7 +20,7 @@ export const login = (creds) => {
         })
         .catch(e => {
           return Rx.Observable.of({error: e.message})
-        }).share()
+        })
   newStateObservable(login$)
   return login$
 }
