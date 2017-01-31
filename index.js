@@ -218,12 +218,11 @@ function treeify(task, tasks, parents) {
   }
 }
 
-app.get('/api/user/task', (req, res) => {
-  var user = req.user;
-  knex('task')
+function getTasks(user, flatten) {
+  return knex('task')
     .where({user_id: user.id})
     .then((tasks) => {
-      if (!req.query.flatten) {
+      if(!flatten) {
         const leafNodes = tasks.filter((t) => {
           return tasks.filter((possibleChild) => possibleChild.task_id === t.id).length === 0
         });
@@ -231,11 +230,19 @@ app.get('/api/user/task', (req, res) => {
         leafNodes.forEach((ln) => {
           treeify(ln, tasks, parents);
         });
-        res.json(parents);
+        return parents;
       } else {
-        res.json(tasks);
+        return tasks;
       }
     });
+}
+
+app.get('/api/user/task', (req, res) => {
+  var user = req.user;
+  var flatten = req.query.flatten;
+  getTasks(user, flatten).then(tasks => {
+    res.json(tasks);
+  })
 });
 
 app.get('/api/user/category', (req, res) => {
