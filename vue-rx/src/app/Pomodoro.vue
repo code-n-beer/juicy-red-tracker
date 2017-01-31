@@ -1,7 +1,9 @@
 <template>
   <div>
     <input class="pomo-length" v-model="pomodoroLength" placeholder="Pomodoro length in minutes">
-    <input class="pomo-name" v-model="pomodoroName" placeholder="Pomodoro task name">
+    <select class="task-select">
+      <option v-for="task in state$.tasks" v-bind:value="task.id"> {{task.name}} </option>
+    </select>
     <button v-show="running" name="stop"> Stop </button>
     <button v-show="running" name="finish"> Finish </button>
     <button v-show="!running"  name="start"> Start </button>
@@ -12,6 +14,9 @@
 
 <script>
   import Rx from 'rxjs/Rx'
+
+  import {state$} from '../util/state'
+
   export default {
     name: 'Pomodoro',
     data() {
@@ -39,7 +44,7 @@
                 ? Rx.Observable.timer(0, 1000).take(length * 60)
                 : Rx.Observable.empty()})
       return {
-        running, pomodoroLength$, pomodoroTimer
+        running, pomodoroLength$, pomodoroTimer, state$: state$
       }
     }
   }
