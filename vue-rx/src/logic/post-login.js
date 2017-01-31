@@ -6,6 +6,7 @@ import {GET} from '../util/rest.js'
 const fetchUserData = state$
       .filter(state => !state.userDataFetched && !state.userDataFetching && state.token)
       .map(_ => ({userDataFetching: true, userDataFetched: false}))
+      .do(e => console.log(e))
 
 const fetchFinished = state$
       .filter(state => state.userDataFetching)

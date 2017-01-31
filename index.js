@@ -5,6 +5,7 @@ var uuid = require('node-uuid');
 var app = express();
 var url = require('url');
 var pgServer = url.parse(process.env.DATABASE_URL);
+var keyBy = require('lodash.keyby')
 
 var user = pgServer.auth.split(':')[0]
 var password = pgServer.auth.split(':')[1]
@@ -107,13 +108,13 @@ app.delete('/api/session', (req, res) => {
 app.post('/api/user/category', (req, res) => {
   var user = req.user;
   knex('category')
-    .returning('id')
+    .returning('*')
     .insert({
       user_id: user.id,
       name: req.body.name
     })
     .then((rows) => {
-      res.json(rows);
+      res.json(rows[0]);
     });
 });
 
@@ -302,9 +303,9 @@ app.get('/api/user', (req, res) => {
     .then((pomodoros) => {
       delete user.password
       user.pomodoros = pomodoros;
-      user.categories = categories;
+      user.categories = keyBy(categories, c => c.id);
       user.goals = goals;
-      user.tasks = taskies;
+      user.tasks = keyBy(taskies, t => t.id);
       res.json(user);
     });
 });
