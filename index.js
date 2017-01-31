@@ -269,7 +269,7 @@ app.get('/api/mock/tasks', (req, res) => {
 
 app.get('/api/user', (req, res) => {
   var user = req.user;
-  var goals, categories;
+  var goals, categories, taskies;
   knex('goal')
     .where({user_id: user.id})
     .then((goalRows) => {
@@ -281,6 +281,7 @@ app.get('/api/user', (req, res) => {
       return knex('task').where({user_id: user.id})
     })
     .then((tasks) => {
+      taskies = tasks;
       const leafNodes = tasks.filter((t) => {
         return tasks.filter((possibleChild) => possibleChild.task_id === t.id).length === 0
       });
@@ -303,6 +304,7 @@ app.get('/api/user', (req, res) => {
       user.pomodoros = pomodoros;
       user.categories = categories;
       user.goals = goals;
+      user.tasks = taskies;
       res.json(user);
     });
 });
