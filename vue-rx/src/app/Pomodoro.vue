@@ -11,7 +11,7 @@
     </select>
 
     <div>
-      <input class="new-task" placeholder="New task name">
+      <input class="new-task" v-model="newTaskName" placeholder="New task name">
       <button name="new-task-button"> Create </button>
     </div>
 
@@ -41,13 +41,11 @@
       return {
         pomodoroLength: 25,
         categorySelect: false,
-        tasksUnderCategory: []
       }
     },
     subscriptions() {
       const selectedCategory = this.$watchAsObservable('categorySelect')
             .pluck('newValue')
-            .do(e => console.log(e))
 
       const tasksPerCategory$ = state$
             .filter(s => s.tasks)
@@ -58,7 +56,7 @@
             .pluck('newValue')
             .startWith(25) // TODO: figure out how to not need more than one initialization (25)
             .map(val => parseInt(val))
-      const clickFinish= this.$fromDOMEvent('button[name=finish]', 'click')
+      const clickFinish = this.$fromDOMEvent('button[name=finish]', 'click')
             .map(e => false)
       const clickStop = this.$fromDOMEvent('button[name=stop]', 'click')
             .map(e => false)
@@ -69,24 +67,17 @@
             .pluck('newValue')
 
       const clickNewTask = this.$fromDOMEvent("button[name=new-task-button]", 'click')
-            .do(e => console.log('clickedy clack'))
-            .withLatestFrom(newCatName, (click, catName) => catName)
-            .filter(e => e)
-            .do(e => console.log(`taskname: ${e}`))
-      //TODO: task needs category id etc
-            //.map(n => Rx.Observable.fromPromise(POST('/user/task', {'name': n})))
-            .do(e => console.log(e))
+            .withLatestFrom(newTaskName, (click, taskName) => taskName)
+            .filter(e => e) // should have a name
+            .withLatestFrom(selectedCategory, (taskName, catId) => Rx.Observable.fromPromise(POST(`/user/category/${catId}/task`, {'name': taskName})))
 
       const newCatName = this.$watchAsObservable('newCatName')
             .pluck('newValue')
 
       const clickNewCat = this.$fromDOMEvent("button[name=new-category-button]", 'click')
-            .do(e => console.log('clickedy clack'))
             .withLatestFrom(newCatName, (click, catName) => catName)
             .filter(e => e)
-            .do(e => console.log(`catname: ${e}`))
             .map(n => Rx.Observable.fromPromise(POST('/user/category', {'name': n})))
-            .do(e => console.log(e))
 
       const running = Rx.Observable.merge(clickStart, clickStop, clickFinish)
 
@@ -96,7 +87,7 @@
                 ? Rx.Observable.timer(0, 1000).take(length * 60)
                 : Rx.Observable.empty()})
       return {
-        selectedCategory, tasksPerCategory$, newCatName, clickNewCat, running, pomodoroLength$, pomodoroTimer, state$
+        selectedCategory, tasksPerCategory$, newCatName, newTaskName, clickNewTask, clickNewCat, running, pomodoroLength$, pomodoroTimer, state$
       }
     }
   }
