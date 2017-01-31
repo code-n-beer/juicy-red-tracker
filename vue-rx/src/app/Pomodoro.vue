@@ -42,6 +42,8 @@
       return {
         pomodoroLength: 25,
         categorySelect: false,
+        newCatName: '',
+        newTaskName: '',
       }
     },
     subscriptions() {
@@ -105,7 +107,7 @@
                 ? Rx.Observable.timer(0, 1000).take(length * 60)
                 : Rx.Observable.empty()})
       return {
-        categories, selectedCategory, tasksPerCategory$, newCatName, newTaskName, clickNewTask, clickNewCat, running, pomodoroLength$, pomodoroTimer, state$
+        categories, selectedCategory, tasksPerCategory$, newCatName, newTaskName, clickNewTask, running, pomodoroLength$, pomodoroTimer, state$
       }
     }
   }

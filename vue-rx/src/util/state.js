@@ -1,7 +1,7 @@
 import Rx from 'rxjs/Rx'
 import isEqual from 'lodash.isequal'
 
-const initialStateObserver = Rx.Observable.of({token: localStorage.getItem('accesstoken')})
+const initialStateObserver = Rx.Observable.of({})
       .map((obj) => state => Object.assign({}, state, obj))
 
 const stateObserver$ = new Rx.BehaviorSubject(initialStateObserver)
@@ -9,18 +9,9 @@ const stateObserver$ = new Rx.BehaviorSubject(initialStateObserver)
       .do(_ => console.log('state observer des'))
       .do(e => console.log(e))
 
-/*
 export const newStateObservable = (observable) => {
-  const sub = new Rx.BehaviorSubject({})
-        .map((obj) => state => Object.assign({}, state, obj))
-  observable.subscribe(sub)
-  stateObserver$.next(sub)
-}
-*/
-
-export const newStateObservable = (observable) => {
-  console.log('test')
   stateObserver$.next(observable
+                      .share()
                       .map((obj) => state => Object.assign({}, state, obj)))
 }
 
