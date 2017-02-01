@@ -74,10 +74,10 @@
       function getModifyTaskDiff(newTask, state) {
 			  let parentCat = state.categories[newTask.category_id]
         parentCat.tasks.push(newTask)
-        let tasks = state.tasks
-        tasks[newTask.id] = newTask;
+        let tasks = Object.assign({}, state.tasks)
+        tasks[newTask.id] = newTask
         return {
-          categories: Object.assign(state.categories, {[newTask.category_id]: parentCat}),
+          categories: Object.assign({}, state.categories, {[newTask.category_id]: parentCat}),
           tasks: tasks
         }
       }

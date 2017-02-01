@@ -19,15 +19,10 @@
     name: 'PomodoroList',
     subscriptions() {
       const tasksWithPomos = state$
-            .filter(e => !!e)
             .filter(e => e && e.tasks)
-            .do(e => e.tasks)
             .map(state => state.tasks && state.pomodoros ? Object.assign(...Object.keys(state.tasks).map(k => ({[k]: Object.assign(state.tasks[k], {'pomos': state.pomodoros.filter(p => p.task_id === state.tasks[k].id && p.minutes !== 0)})}))) : state.tasks)
-            .do(e=>console.log(e))
-//                 .map(task => Object.assign(task, {'pomos': state.pomodoros.filter(p => p.task_id === task.id && p.minutes !== 0)})))
-      //Object.assign(...Object.keys(state.tasks).map(k => ({[k]: obj[k] * obj[k]})));
+
       return {
-        userData: state$,
         tasksWithPomos
       }
     }
