@@ -6,7 +6,6 @@
     </div>
 
     Select category:
-    <span v-for="category in categories"> {{category.name}} </span>
     <select class="category-select" v-model="categorySelect">
       <option v-for="category in categories" v-bind:value="category.id"> {{category.name}} </option>
     </select>
@@ -50,15 +49,13 @@
       const selectedCategory = this.$watchAsObservable('categorySelect')
             .pluck('newValue')
 
+      const tasksPerCategory$ = selectedCategory
+            .withLatestFrom(state$, (selectedCat, state) => {
+              return state.categories[selectedCat].tasks
+            })
+
       const categories = state$
             .map(s => s.categories)
-            .do(_ => console.log('categories'))
-            .do(e => console.log(e))
-
-      const tasksPerCategory$ = state$
-            .filter(s => s.tasks)
-            .map(s => groupBy(s.tasks, t => t.category_id))
-            .combineLatest(selectedCategory, (tasks, selected) => tasks[selected])
 
       const pomodoroLength$ = this.$watchAsObservable('pomodoroLength')
             .pluck('newValue')
@@ -87,15 +84,11 @@
             .withLatestFrom(newCatName, (click, catName) => catName)
             .filter(e => e)
             .flatMap(n => Rx.Observable.fromPromise(POST('/user/category', {'name': n})))
-            .do(e => console.log('seeeeeees'))
-            .do(e => console.log(e))
             .withLatestFrom(state$, (newCat, state) => {
               let asdf = Object.assign({categories: Object.assign({}, state.categories, {[newCat.id]: newCat})})
               return asdf
             })
-            .do(e => console.log(e))
             .map(e => e)
-            .do(e => console.log(e))
 
       newStateObservable(clickNewCat)
 
