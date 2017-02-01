@@ -17,7 +17,6 @@ const reducer = new Rx.BehaviorSubject(initialStateObserver)
 
 export const newStateObservable = (observable) => {
   reducer.next(observable
-                      .share()
                       .map((obj) => state => Object.assign({}, state, obj)))
 }
 

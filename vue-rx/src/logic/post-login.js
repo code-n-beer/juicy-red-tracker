@@ -10,6 +10,10 @@ const fetchUserData = state$
 
 const fetchFinished = state$
       .filter(state => state.userDataFetching)
+      .map(state => state.userDataFetching)
+//TODO: implement debounce with immediate first release...
+// ... or just fix the reason why this is called three times immediately
+      .debounceTime(1)
       .flatMap(_ => Rx.Observable.fromPromise(GET('/user/')))
       .map(obj => ({...obj, userDataFetching: false, userDataFetched: true}))
 
