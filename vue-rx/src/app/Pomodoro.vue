@@ -71,11 +71,25 @@
       const newTaskName = this.$watchAsObservable('newTaskName')
             .pluck('newValue')
 
+      function getModifyTaskDiff(newTask, state) {
+			  let parentCat = state.categories[newTask.category_id]
+        parentCat.tasks.push(newTask)
+        let tasks = state.tasks
+        tasks[newTask.id] = newTask;
+        return {
+          categories: Object.assign(state.categories, {[newTask.category_id]: parentCat}),
+          tasks: tasks
+        }
+      }
+
       const clickNewTask = this.$fromDOMEvent("button[name=new-task-button]", 'click')
             .withLatestFrom(newTaskName, (click, taskName) => taskName)
             .filter(e => e) // should have a name
             .withLatestFrom(selectedCategory, (taskName, catId) => Rx.Observable.fromPromise(POST(`/user/category/${catId}/task`, {'name': taskName})))
-            .flatMap(e => console.log(e))
+            .flatMap(e => e)
+            .withLatestFrom(state$, (newTask, state) => getModifyTaskDiff(newTask, state))
+
+      newStateObservable(clickNewTask)
 
       const newCatName = this.$watchAsObservable('newCatName')
             .pluck('newValue')
@@ -84,10 +98,7 @@
             .withLatestFrom(newCatName, (click, catName) => catName)
             .filter(e => e)
             .flatMap(n => Rx.Observable.fromPromise(POST('/user/category', {'name': n})))
-            .withLatestFrom(state$, (newCat, state) => {
-              let asdf = Object.assign({categories: Object.assign({}, state.categories, {[newCat.id]: newCat})})
-              return asdf
-            })
+            .withLatestFrom(state$, (newCat, state) => ({categories: Object.assign({}, state.categories, {[newCat.id]: newCat})}))
             .map(e => e)
 
       newStateObservable(clickNewCat)
@@ -100,7 +111,7 @@
                 ? Rx.Observable.timer(0, 1000).take(length * 60)
                 : Rx.Observable.empty()})
       return {
-        categories, selectedCategory, tasksPerCategory$, newCatName, newTaskName, clickNewTask, running, pomodoroLength$, pomodoroTimer, state$
+        categories, selectedCategory, tasksPerCategory$, newCatName, newTaskName, running, pomodoroLength$, pomodoroTimer, state$
       }
     }
   }

@@ -85,10 +85,10 @@ app.post('/api/user/category/:categoryId/task', (req, res) => {
     .then((doesBelong) => {
       if (doesBelong) {
         knex('task')
-          .returning('id')
+          .returning('*')
           .insert(task)
           .then((rows) => {
-            res.json(rows);
+            res.json(rows[0]);
           });
       } else {
         res.status(403).json({error: 'This category belongs to someone else'});
