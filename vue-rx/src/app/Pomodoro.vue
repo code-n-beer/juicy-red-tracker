@@ -39,6 +39,10 @@
   import {state$, newStateObservable} from '../util/state'
   import {POST} from '../util/rest.js'
 
+  const audio = new Audio('notification.mp3')
+console.log('audio')
+console.log(audio)
+
   export default {
     name: 'Pomodoro',
     data() {
@@ -131,7 +135,6 @@
         return `${minutes} minutes ${seconds} seconds`
       }
 
-      let audio = new Audio('https://cdn.rawgit.com/code-n-beer/juicy-red-tracker/98910de70e169e71aaa01c684c8934a6a4214fea/re-frame-pomofront/resources/public/audio/notification.mp3')
 
       function ringBell(time) {
         if(time <= 1) {
