@@ -131,10 +131,10 @@ app.post('/api/user/task/:taskId/pomodoro', (req, res) => {
           success: req.body.success
         };
         knex('pomodoro')
-          .returning('id')
+          .returning('*')
           .insert(pomodoro)
           .then((rows) => {
-            res.json(rows);
+            res.json(rows[0]);
           });
       } else {
         res.status(403).json({error: 'This task doesn\'t belong to you'});
