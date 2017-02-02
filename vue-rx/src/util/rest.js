@@ -1,4 +1,4 @@
-const API = 'http://localhost:3002/api'
+const API = 'http://' + location.hostname + ':3002/api'
 export function POST(endpoint, data) {
   console.log('postink!')
   return fetch(API + endpoint, {
