@@ -10,21 +10,25 @@
       <option v-for="category in categories" v-bind:value="category.id"> {{category.name}} </option>
     </select>
 
-    <div>
-      <input class="new-task" v-model="newTaskName" placeholder="New task name">
-      <button name="new-task-button"> Create </button>
-    </div>
+  <div v-if="selectedCategory">
+      <div>
+        <input class="new-task" v-model="newTaskName" placeholder="New task name">
+        <button name="new-task-button"> Create </button>
+      </div>
 
-    <input class="pomo-length" v-model="pomodoroLength" placeholder="Pomodoro length in minutes">
-
-    <select class="task-select" v-model="taskSelect">
+      Select task:
+      <select class="task-select" v-model="taskSelect">
       <option v-for="task in tasksPerCategory$" v-bind:value="task.id"> {{task.name}} </option>
-    </select>
+      </select>
 
-    <button v-show="running" name="stop"> Stop </button>
-    <button v-show="running" name="finish"> Finish </button>
-    <button v-show="!running"  name="start"> Start </button>
-    <p v-show="running"> runnink {{pomodoroTimer}} plop </p>
+      <div v-if="selectedTask">
+        <input class="pomo-length" v-model="pomodoroLength" placeholder="Pomodoro length in minutes">
+        <button v-show="running" name="stop"> Stop </button>
+        <button v-show="running" name="finish"> Finish </button>
+        <button v-show="!running"  name="start"> Start </button>
+        <p v-show="running"> runnink {{pomodoroTimer}} plop </p>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -113,6 +117,7 @@
             .withLatestFrom(newCatName, (click, catName) => catName)
             .filter(e => e)
             .flatMap(n => Rx.Observable.fromPromise(POST('/user/category', {'name': n})))
+            .map(newCat => Object.assign(newCat, {tasks: []}))
             .withLatestFrom(state$, (newCat, state) => ({categories: Object.assign({}, state.categories, {[newCat.id]: newCat})}))
             .map(e => e)
 
@@ -148,7 +153,7 @@
             .map(formatTime)
 
       return {
-        loggedIn, categories, selectedCategory, tasksPerCategory$, newCatName, newTaskName, running, pomodoroLength$, pomodoroTimer, state$
+        loggedIn, categories, selectedCategory, selectedTask, tasksPerCategory$, newCatName, newTaskName, running, pomodoroLength$, pomodoroTimer, state$
       }
     }
   }

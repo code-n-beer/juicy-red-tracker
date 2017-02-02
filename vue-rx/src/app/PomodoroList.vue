@@ -19,8 +19,8 @@
     name: 'PomodoroList',
     subscriptions() {
       const tasksWithPomos = state$
-            .filter(e => e.tasks && e.tasks.length > 0)
-            .filter(e => e.pomodoros)
+            .filter(s => s.tasks && s.pomodoros)
+            .filter(s => Object.keys(s.tasks).length > 0)
             .map(state => state.tasks && state.pomodoros ? Object.assign(...Object.keys(state.tasks).map(k => ({[k]: Object.assign(state.tasks[k], {'pomos': state.pomodoros.filter(p => p.task_id === state.tasks[k].id && p.minutes !== 0)})}))) : state.tasks)
 
       return {
