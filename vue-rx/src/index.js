@@ -10,7 +10,7 @@ const router = new VueRouter({
   mode: 'history',
   routes: [
     {
-      path: '/',
+      path: '/pomodoro/',
       components: {
         default: Hello
       }
