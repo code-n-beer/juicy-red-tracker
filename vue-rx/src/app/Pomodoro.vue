@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-show="loggedIn">
     <div>
       <input class="new-category" v-model="newCatName" placeholder="New category name">
       <button name="new-category-button"> Create </button>
@@ -47,6 +47,9 @@
       }
     },
     subscriptions() {
+      const loggedIn = state$
+            .filter(s => s.id)
+
       const selectedCategory = this.$watchAsObservable('categorySelect')
             .pluck('newValue')
 
@@ -145,7 +148,7 @@
             .map(formatTime)
 
       return {
-        categories, selectedCategory, tasksPerCategory$, newCatName, newTaskName, running, pomodoroLength$, pomodoroTimer, state$
+        loggedIn, categories, selectedCategory, tasksPerCategory$, newCatName, newTaskName, running, pomodoroLength$, pomodoroTimer, state$
       }
     }
   }

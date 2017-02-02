@@ -142,6 +142,7 @@ app.post('/api/user/task/:taskId/pomodoro', (req, res) => {
     });
 });
 
+// Register
 app.post('/api/user', (req, res) => {
   console.log(req.body);
   console.log(req.body.email);
@@ -157,6 +158,7 @@ app.post('/api/user', (req, res) => {
     });
 });
 
+// Login
 app.post('/api/session', (req, res) => {
   console.log(req.body);
   console.log(req.body.email);
