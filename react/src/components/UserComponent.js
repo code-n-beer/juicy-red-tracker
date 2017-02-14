@@ -2,10 +2,11 @@
 
 import React from 'react'
 import R from 'react.reactive'
+import Rx from 'rxjs/Rx'
 
 require('styles//User.css');
 
-import state$ from '../util/state.js'
+import {state$, newStateObservable} from '../util/state.js'
 
 const userData = state$
 const loginData = state$
@@ -29,21 +30,26 @@ let Messages = (props) => (
   </R.div>
 )
 
-let Login = (props) => (
+let Login = R(({events}) => {
+  const clicked = Rx.Observable.fromEvent(events, 'login-btn')
+        .map(() => 'ses')
+  return (
     <div>
-    Login:
-    <input type="text" placeholder="email" name="email"/>
-    <input type="text" placeholder="password will be sent as plain text" name="password"/>
-    <button name="login"> Login </button>
+      Login:
+      <input  type="text" placeholder="email" name="email"/>
+      <input type="text" placeholder="password will be sent as plain text" name="password"/>
+      <R.button emits={{click: "login-btn"}} name="login"> Login </R.button>
+      <R.div>{clicked}</R.div>
     </div>
-)
+  )
+})
 
 let Register = (props) => (
     <div>
-    Register:
-    <input type="text" placeholder="email" name="reg-email" />
-    <input type="text" placeholder="password will be sent as plain text" name="reg-password"/>
-    <button name="register"> Register </button>
+      Register:
+      <input type="text" placeholder="email" name="reg-email" />
+      <input type="text" placeholder="password will be sent as plain text" name="reg-password"/>
+      <button name="register"> Register </button>
     </div>
 )
 
