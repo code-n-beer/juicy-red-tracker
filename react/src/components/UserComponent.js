@@ -7,11 +7,12 @@ import Rx from 'rxjs/Rx'
 require('styles//User.css');
 
 import {state$, newStateObservable} from '../util/state.js'
+import {login} from '../util/auth.js'
 
 const userData = state$
 const loginData = state$
 
-let Messages = (props) => (
+const Messages = (props) => (
   <R.div>
     {userData && userData.token
      ? <div class="logged-in">
@@ -30,21 +31,36 @@ let Messages = (props) => (
   </R.div>
 )
 
-let Login = R(({events}) => {
+const getInputVal = (selector) => {
+  return document.querySelector(selector).value
+}
+
+const getCreds = () => {
+  return {
+    email: getInputVal('input[name=log-email]'),
+    password: getInputVal('input[name=log-password]')
+  }
+}
+
+const Login = R(({events}) => {
   const clicked = Rx.Observable.fromEvent(events, 'login-btn')
-        .map(() => 'ses')
+        .map(() => getCreds())
+        .filter(c => c.email && c.password)
+        .switchMap((creds) => login(creds))
+        .do(_ => console.log('response'))
+        .do(e => console.log(e))
   return (
     <div>
       Login:
-      <input  type="text" placeholder="email" name="email"/>
-      <input type="text" placeholder="password will be sent as plain text" name="password"/>
+      <input type="text" placeholder="email" name="log-email"/>
+      <input type="text" placeholder="password will be sent as plain text" name="log-password"/>
       <R.button emits={{click: "login-btn"}} name="login"> Login </R.button>
       <R.div>{clicked}</R.div>
     </div>
   )
 })
 
-let Register = (props) => (
+const Register = (props) => (
     <div>
       Register:
       <input type="text" placeholder="email" name="reg-email" />
@@ -53,7 +69,7 @@ let Register = (props) => (
     </div>
 )
 
-let UserComponent = (props) => (
+const UserComponent = (props) => (
     <div className="pomodoro-component">
     <Messages/>
     {!userData || !userData.token
