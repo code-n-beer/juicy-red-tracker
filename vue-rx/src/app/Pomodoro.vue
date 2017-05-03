@@ -40,8 +40,6 @@
   import {POST} from '../util/rest.js'
 
   const audio = new Audio('notification.mp3')
-console.log('audio')
-console.log(audio)
 
   export default {
     name: 'Pomodoro',
@@ -135,11 +133,19 @@ console.log(audio)
         return `${minutes} minutes ${seconds} seconds`
       }
 
+      function sendNotification() {
+        Notification.requestPermission(function (permission) {
+          if (permission === "granted") {
+            var notification = new Notification("Pomodoro finished!");
+          }
+        });
+      }
 
       function ringBell(time) {
         if(time <= 1) {
           console.log('played!')
           audio.play()
+          sendNotification()
         }
         return time;
       }
@@ -147,11 +153,11 @@ console.log(audio)
       const pomodoroTimer = running.withLatestFrom(pomodoroLength$, (a, b) => [a,b])
             .switchMap(([isRunning, length]) => {
               return isRunning
-                ? Rx.Observable.timer(0, 1000).take(length)
-                //? Rx.Observable.timer(0, 1000).take(length * 60)
+                //? Rx.Observable.timer(0, 1000).take(length)
+                ? Rx.Observable.timer(0, 1000).take(length * 60)
                 : Rx.Observable.empty()})
-            //.withLatestFrom(pomodoroLength$, (elapsed, length) => length * 60 - elapsed)
-            .withLatestFrom(pomodoroLength$, (elapsed, length) => length - elapsed)
+            .withLatestFrom(pomodoroLength$, (elapsed, length) => length * 60 - elapsed)
+            //.withLatestFrom(pomodoroLength$, (elapsed, length) => length - elapsed)
             .map(ringBell)
             .map(formatTime)
 
