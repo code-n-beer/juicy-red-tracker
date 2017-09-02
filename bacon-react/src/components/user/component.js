@@ -1,7 +1,7 @@
 import React from 'baret'
 import Bacon from 'baconjs'
 import {loggedIn$} from '../../util/state.js'
-import {login} from '../../util/auth.js'
+import {login, logout} from '../../util/auth.js'
 class User extends React.Component {
   constructor(props) {
     super(props)
@@ -9,7 +9,7 @@ class User extends React.Component {
     this.password = new Bacon.Bus()
     this.login = new Bacon.Bus()
     this.register = new Bacon.Bus()
-    this.inputs = this.username.combine(this.password, (email, password) => {return {email: email, password: password}})
+    this.inputs = this.username.combine(this.password, (email, password) => {return {email, password}})
     const login$ = Bacon.when(
       [this.inputs, this.login], creds => login(creds)
     ).flatMap(o => o)
@@ -25,6 +25,7 @@ class User extends React.Component {
         localStorage.setItem('email', email)
         return <div>
           Hello {email}!
+          <button onClick={() => logout()}> Logout </button>
         </div>
       } else {
         return <div>
