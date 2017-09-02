@@ -1,7 +1,7 @@
 import React from 'baret'
 import styles from './App.css'
 
-import User from './components/user/component.js'
+import User from './components/user.js'
 
 const App = () =>
   <div className={styles.App}>

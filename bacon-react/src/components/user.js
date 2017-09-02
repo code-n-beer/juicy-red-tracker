@@ -1,7 +1,7 @@
 import React from 'baret'
 import Bacon from 'baconjs'
-import {loggedIn$} from '../../util/state.js'
-import {login, logout} from '../../util/auth.js'
+import {loggedIn$} from '../util/state.js'
+import {login, logout} from '../util/auth.js'
 class User extends React.Component {
   constructor(props) {
     super(props)
