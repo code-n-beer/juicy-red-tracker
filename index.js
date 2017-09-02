@@ -266,6 +266,16 @@ app.get('/api/user/pomodoro', (req, res) => {
     });
 });
 
+//.map(state => state.tasks && state.pomodoros ? Object.assign(...Object.keys(state.tasks).map(k => ({[k]: Object.assign(state.tasks[k], {'pomos': state.pomodoros.filter(p => p.task_id === state.tasks[k].id && p.minutes !== 0)})}))) : state.tasks)
+app.get('/api/user/pomodoros-by-task', (req, res) => {
+  var user = req.user;
+  knex('pomodoro')
+    .where({user_id: user.id})
+    .then((pomodoros) => {
+      res.json(pomodoros);
+    });
+});
+
 app.get('/api/mock/tasks', (req, res) => {
   res.json({tasks: ['School', 'Work', 'Sports', 'Games']});
 });
