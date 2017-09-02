@@ -12,7 +12,7 @@ export const POST = (endpoint, data) =>
       'Content-Type': 'application/json',
       'accesstoken' : localStorage.getItem('accesstoken')
     })
-  }).then(res => console.log(res) || res.ok ? res.json() : Bacon.Error("Login fail")).catch(e => Bacon.Error("POST crashed")))
+  }).then(res => res.ok ? res.json() : Bacon.Error("Login fail")).catch(e => Bacon.Error("POST crashed")))
 
 export const GET = (endpoint) =>
   Bacon.fromPromise(fetch(API + endpoint, {
