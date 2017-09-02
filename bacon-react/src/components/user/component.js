@@ -11,7 +11,7 @@ class User extends React.Component {
     this.register = new Bacon.Bus()
     this.inputs = this.username.combine(this.password, (email, password) => {return {email: email, password: password}})
     const login$ = Bacon.when(
-      [this.inputs, this.login], (creds) => login(creds)
+      [this.inputs, this.login], creds => login(creds)
     ).flatMap(o => o)
     login$.onError(a => console.log('login failed'))
     login$.onValue(val => loggedIn$.push(val))
